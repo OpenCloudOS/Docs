@@ -12,7 +12,7 @@
     * [安装指南-English](opencloudos-8.5-lts/kuai-su-ru-men/an-zhuang-zhi-nan-english/README.md)
       * [Installation Guide](opencloudos-8.5-lts/kuai-su-ru-men/an-zhuang-zhi-nan-english/installation-guide.md)
       * [Installation Guide With GUI](opencloudos-8.5-lts/kuai-su-ru-men/an-zhuang-zhi-nan-english/installation-guide-with-gui.md)
-    * [管理员指南](opencloudos-8.5-lts/kuai-su-ru-men/guan-li-yuan-zhi-nan.md)
+    * [管理员指南](opencloudos-8.5-lts/kuai-su-ru-men/guan-li-yuan-zhi-nan/README.md)
     * [如意QoS用户指南](opencloudos-8.5-lts/kuai-su-ru-men/ru-yi-qos-yong-hu-zhi-nan.md)
   * [用户反馈](opencloudos-8.5-lts/yong-hu-fan-kui/README.md)
     * [Bugzilla使用手册](opencloudos-8.5-lts/yong-hu-fan-kui/bugzilla-shi-yong-shou-ce.md)
