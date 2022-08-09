@@ -136,7 +136,7 @@ Bugzilla 允许您"克隆"现有的错误。新创建的bug将继承旧bug的大
 
 ### 7.1 简单搜索（Simple Search）
 
-如果想查看全部的bug内容，那么在简单搜索（Simple Search）选项中，选择Status：ALL，Product：ALL，Words不填写，点击Search搜索，若有特定的查找目标，则按需选择。
+如果想查看全部的bug内容，那么在简单搜索（Simple Search）选项中，选择Status：ALL，Product：ALL，Words不填写，点击【Search】搜索，若有特定的查找目标，则按需选择。
 
 ![IMG_256](media/image7.png)
 
