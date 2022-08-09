@@ -55,7 +55,7 @@ OpenCloudOS SIG（特别兴趣小组）产品提交记录OpencloudOS各个兴趣
 
 1> 单击页面页眉或页脚中的New选项，或主页上的【File a Bug】选项。
 
-![IMG_256] (media/image3.png)
+![IMG_256](media/image3.png)
 
 
 2> 点击后将来到一个页面要求您选择发现错误的产品。如OpenCloudOS发行版使用过程中的遇到的软件问题、安装问题可以在这个产品下提。
