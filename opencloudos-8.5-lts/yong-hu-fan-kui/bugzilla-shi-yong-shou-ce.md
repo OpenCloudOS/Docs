@@ -9,9 +9,9 @@
 
 Bugzilla是一个来自Mozilla的开源缺陷跟踪系统。可跟踪和管理软件开发中的错误和问题。其功能包含报告Bug， 查询Bug，记录bug并产生报表，跟踪bug处理解决状态等等。
 
-OpenCloudOS搭建使用Bugzilla开源缺陷跟踪系统，使我们更好的跟踪记录OpenCloudOS开发维护过程中的错误的处理过程，提供给用户一个提交问题，咨询问题的平台，亦方便开发人员对问题进行溯源。欢迎您在OpenCloudOS Bugzilla官方网站上为我们提出宝贵的建议：https://bugs.opencloudos.tech/。
+OpenCloudOS搭建使用Bugzilla开源缺陷跟踪系统，使我们更好的跟踪记录OpenCloudOS开发维护过程中的错误的处理过程，提供给用户一个提交问题，咨询问题的平台，亦方便开发人员对问题进行溯源。欢迎您在OpenCloudOS Bugzilla官方网站上为我们提出宝贵的建议：https://bugs.opencloudos.tech/
 
-此文档主要介绍Bugzilla普通用户的使用。翻译自Bugzilla官方用户手册：<https://bugzilla.readthedocs.io/en/5.0/using/index.html>。
+此文档主要介绍Bugzilla普通用户的使用。翻译自Bugzilla官方用户手册：<https://bugzilla.readthedocs.io/en/5.0/using/index.html>
 
 
 
