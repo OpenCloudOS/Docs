@@ -21,13 +21,13 @@ Bugzilla创建用户的过程：
 
 1> 点击主页上方的New Account。
 
-![IMG_256]（media/image1.png）
+![IMG_256](media/image1.png)
 
 > 注：如果新帐户链接不可用，这意味着安装管理员已禁用自注册。与管理员交谈以了解如何获取帐户。
 
 2> 填写一个有效的邮箱地址，填好后，点击send按钮。
 
-![IMG_256]（media/image2.png）
+![IMG_256](media/image2.png)
 
 3> 你将会收到一封来自bugtracker@opencloudos.org的邮件，其中包含您的登录名（通常与电子邮件地址相同），以及一个用于单击以确认您的注册的URL。
 
@@ -55,7 +55,7 @@ OpenCloudOS SIG（特别兴趣小组）产品提交记录OpencloudOS各个兴趣
 
 1> 单击页面页眉或页脚中的New选项，或主页上的【File a Bug】选项。
 
-![IMG_256]（media/image3.png）
+![IMG_256] (media/image3.png)
 
 
 2> 点击后将来到一个页面要求您选择发现错误的产品。如OpenCloudOS发行版使用过程中的遇到的软件问题、安装问题可以在这个产品下提。
@@ -130,7 +130,7 @@ Bugzilla 允许您"克隆"现有的错误。新创建的bug将继承旧bug的大
 
 单击页面页眉、页脚过主页中央的【Search】选项可进入bug搜寻页。有简单搜索（Simple Search）和高级搜索（Advanced Search）两种搜索方式。
 
-![IMG_256]（media/image6.png）
+![IMG_256](media/image6.png)
 
 
 
@@ -138,7 +138,7 @@ Bugzilla 允许您"克隆"现有的错误。新创建的bug将继承旧bug的大
 
 如果想查看全部的bug内容，那么在简单搜索（Simple Search）选项中，选择Status：ALL，Product：ALL，Words不填写，点击Search搜索，若有特定的查找目标，则按需选择。
 
-![IMG_256]（media/image7.png）
+![IMG_256](media/image7.png)
 
 
 
