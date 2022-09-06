@@ -441,3 +441,220 @@ VPN、移动宽带和 PPPoE 连接的信息存储在 /etc/NetworkManager/system-
     ...
     ```
     enp1s0 设备旁边的 unmanaged 状态表示 NetworkManager 没有管理该设备。
+
+# 第4章 使用nmtui文本界面管理网络连接
+
+## 4.1.启动nmtui工具
+
+**前提条件**
+
+- 已安装 NetworkManager-tui 软件包
+
+**流程**
+
+1. 启动 nmtui ，在命令行输入：
+    ```
+    # nmtui
+    ```
+    ![nmtui启动界面](/.gitbook/assets/nmtui文本界面.png)
+2. 进入 nmtui：
+    - 在选项中，使用光标或按[Tab]键前进，按[Shift]+[Tab]后退。
+    - 使用[Enter]选择一个选项。
+    - 使用[Space]切换复选框状态。
+
+## 4.2.使用nmtui添加连接配置集
+
+**前提条件**
+
+- 已安装 NetworkManager-tui 软件包
+
+**流程**
+
+1. 启动 nmtui ，在命令行输入：
+    ```
+    # nmtui
+    ```
+2. 选择 Edit a connection 选项，按[Enter]进入编辑。
+3. 选择[Add]选项，按[Enter]进入。
+4. 选择 Ethernet ，按[Enter]边界
+![nmtui添加新连接](/.gitbook/assets/nmtui添加新连接.png)
+5. 输入连接详情信息。
+![nmtui连接配置详情](/.gitbook/assets/nmtui连接配置详情.png)
+6. 选择[OK]保存更改。
+7. 选择 Back 返回主菜单。
+8. 选择 Activate a connection 并选择[Enter]。
+9. 选择新的连接，点[Enter]键激活连接。
+10. 选择[Back]返回主菜单。
+11. 选择 Quit 。
+
+**验证**
+
+1. 显示设备和连接状态：
+    ```
+    # nmcli device status
+    DEVICE      TYPE      STATE      CONNECTION
+    ens3      ethernet  connected  ens3
+    ```
+2. 显示连接配置集的所有设置：
+    ```
+    # nmcli connection show ens3
+    connection.id:                          ens3
+    connection.uuid:                        f46c8406-74f4-458f-a884-a1889377aebc
+    connection.stable-id:                   --
+    connection.type:                        802-3-ethernet
+    connection.interface-name:              ens3
+    connection.autoconnect:                 yes
+    connection.autoconnect-priority:        0
+    ...
+    ```
+    注意，如果磁盘中的配置与设备中的配置不匹配，则启动或重启 NetworkManager 会创建一个代表该设备的配置的内存连接。
+
+## 4.3.使用nmtui应用更改连接
+
+在 nmtui 中修改了连接后，您必须重新激活连接。请注意，在 nmtui 中重新激活连接会临时停用连接。
+
+**前提条件**
+
+- 连接配置文件未启用 auto-connect 设置。
+
+**流程**
+
+1. 主菜单选择 Activate a connection 选项：
+    ![nmtui修改连接_1](../../.gitbook/assets/nmtui修改连接_1.png)
+2. 选择修改的连接。
+3. 在右侧，选择 Deactivate 按钮，然后按[Enter]键：
+    ![nmtui修改连接_2](../../.gitbook/assets/nmtui修改连接_2.png)
+4. 再次选择连接。
+5. 在右侧，选择 Activate 按钮，然后按[Enter]键：
+    ![nmtui修改连接_3](../../.gitbook/assets/nmtui修改连接_3.png)
+
+# 第5章 nmcli 入门
+
+## 5.1.不同格式的nmcli输出
+
+nmcli 工具支持通过不同的参数控制命令的输出。通过使用这些选项，您可以只显示所需的信息。这简化了处理脚本中输出的过程。
+
+默认情况下，nmcli 以类似于表格的格式显示其输出：
+```
+# nmcli device
+DEVICE      TYPE      STATE                   CONNECTION
+ens3        ethernet  connected               ens3
+virbr0      bridge    connected (externally)  virbr0
+lo          loopback  unmanaged               --
+virbr0-nic  tun       unmanaged               --
+```
+
+使用 -f 参数，您可以按自定义的顺序显示列，例如：
+```
+# nmcli -f DEVICE,STATE device
+DEVICE      STATE
+ens3        connected
+virbr0      connected (externally)
+lo          unmanaged
+virbr0-nic  unmanaged
+```
+
+使用 -t 参数以冒号分隔的形式显示输出每个字段：
+```
+# nmcli -t device
+ens3:ethernet:connected:ens3
+virbr0:bridge:connected (externally):virbr0
+lo:loopback:unmanaged:
+virbr0-nic:tun:unmanaged:
+```
+
+当您使用脚本来处理输出时，将 -f 和 -t 组合，可以只显示冒号分隔形式的特定字段：
+```
+# nmcli -f DEVICE,STATE -t device
+ens3:connected
+virbr0:connected (externally)
+lo:unmanaged
+virbr0-nic:unmanaged
+```
+
+## 5.2.使用tab键自动补全nmcli命令
+
+如果您的主机上安装了 bash-completion 软件包，则 nmcli 工具将支持选项卡补全功能。这可让您自动完成选项名称，并识别可能的选项和值。
+
+例如，如果您输入 nmcli con ，并按 Tab 键，则 shell 会自动补全命令 nmcli connection。
+
+您所输入的选项或值必须是唯一的。如果它不唯一，则 nmcli 会显示所有可能的选项。例如，如果您输入 nmcli connection d ，并按 Tab ，则命令将显示命令 delete 和 down 来作为可能的选项。
+
+您还可以使用 tab 自动完成来显示连接配置集中可以设置的所有属性。例如，如果您输入 nmcli connection modify connection_name ，并按 Tab，命令将显示可用属性的完整列表。
+
+## 5.3.常用的nmcli命令
+
+- 显示连接配置集列表：
+    ```
+    # nmcli connection show
+    NAME    UUID                                  TYPE      DEVICE
+    ens3    f46c8406-74f4-458f-a884-a1889377aebc  ethernet  ens3
+    ```
+
+- 显示指定连接的配置：
+    ```
+    # nmcli connection show CONNECTION-NAME
+    connection.id:                          ens3
+    connection.uuid:                        f46c8406-74f4-458f-a884-a1889377aebc
+    connection.stable-id:                   --
+    connection.type:                        802-3-ethernet
+    connection.interface-name:              ens3
+    connection.autoconnect:                 yes
+    ...
+    ```
+
+- 修改连接属性：
+    ```
+    nmcli connection modify CONNECTION-NAME PROPERTY VALUE
+    ```
+    支持使用了多个 PROPERTY VALUE 组合同时修改多个属性。
+
+- 显示网络设备、状态、类型和连接集列表：
+    ```
+    # nmcli device
+    DEVICE      TYPE      STATE                   CONNECTION
+    ens3        ethernet  connected               ens3
+    ...
+    ```
+
+- 激活连接：
+    ```
+    # nmcli connection up CONNECTION-NAME
+    ```
+
+- 取消激活连接：
+    ```
+    # nmcli connection down CONNECTION-NAME
+    ```
+
+# 第6章 使用GNOME GUI配置网络入门
+
+您可以在 GNOME 中使用以下方法管理和配置网络连接：
+
+- 桌面右上角的 GNOME Shell 网络连接图标
+- GNOME control-center 应用程序
+- GNOME nm-connection-editor 应用程序
+
+## 6.1.通过桌面图标管理网络连接
+
+**前提条件**
+
+- GNOME 软件包组已安装。
+- 您已登录到 GNOME。
+- 如果网络需要特定的配置，如静态 IP 地址或 802.1x 配置,则需要已创建了连接配置集。
+
+**流程**
+
+1. 点击桌面右上角的网络连接图标。
+
+    ![GNOME配置网络_1](../../.gitbook/assets/GNOME配置网络_1.png)
+
+2. 根据连接类型，选择 Wired 或 Wi-Fi 。
+
+    ![GNOME配置网络_2](../../.gitbook/assets/GNOME配置网络_2.png)
+
+3. 对于有线连接，请选择 Connect 来连接到网络。
+
+
+4. 对于 Wi-Fi 连接，点击 Select network，选择您要连接的网络，然后输入密码
+
