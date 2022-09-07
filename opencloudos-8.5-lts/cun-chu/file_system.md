@@ -1483,8 +1483,8 @@ NFS 需要 `rpcbind` 服务，该服务为 RPC 服务动态分配端口，并可
 5. 在 NFS 服务器中运行以下命令，在防火墙中打开添加的端口：
    
    ```
-   firewall-cmd --permanent --add-port=*<statd-tcp-port>*/tcp
-   firewall-cmd --permanent --add-port=*<statd-udp-port>*/udp
+   firewall-cmd --permanent --add-port=<statd-tcp-port>/tcp
+   firewall-cmd --permanent --add-port=<statd-udp-port>/udp
    ```
 
 6. 重新载入防火墙配置：
