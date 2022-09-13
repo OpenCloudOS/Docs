@@ -130,8 +130,9 @@ XFS 动态分配内节点。只要文件系统上存在空闲空间，XFS 文件
 
 如果您的应用程序由于 inode 数太大而失败，请使用 `-o inode32` 选项挂载 XFS 文件系统，来强制inode 数低于 2<sup>32</sup>。请注意，使用 `inode32` 不会影响已分配了 64 位数的 inode。
 
-    重要
-    除非特定环境需要，否则请勿使用 inode32 选项。inode32 选项可改变分配行为。因此，如果没有可用空间在较低磁盘块中分配 inode ，则可能会出现 ENOSPC 错误。
+> **重要**
+> 
+> 除非特定环境需要，否则请勿使用 inode32 选项。inode32 选项可改变分配行为。因此，如果没有可用空间在较低磁盘块中分配 inode ，则可能会出现 ENOSPC 错误。
 
 ## 1.6 选择文件系统
 
@@ -293,9 +294,9 @@ Storage 角色可以管理：
 
 本节提供了一个 Ansible playbook 示例。此 playbook 应用存储角色，来使用默认参数在块设备上创建 XFS 文件系统。
 
-    警告
-    
-    存储角色只能在未分区、整个磁盘或逻辑卷（LV）上创建文件系统。它不能在分区中创建文件系统。
+> **警告**
+> 
+> 存储角色只能在未分区、整个磁盘或逻辑卷（LV）上创建文件系统。它不能在分区中创建文件系统。
 
 **例 2.1 在/dev/sdb上创建 XFS 的playbook**
 
@@ -479,6 +480,7 @@ Storage 角色可以管理：
 - 如果上例中的卷已存在，要调整卷的大小，您需要运行相同的 playbook，使用不同的 `size` 参数值。例如：
 
 **例 2.8 在 `/dev/sdb`上调整 `ext4` 大小的 playbook**
+opencloud
 
 ```
 ---
@@ -499,21 +501,17 @@ Storage 角色可以管理：
 
 - 卷名称（示例中的 barefs）当前是任意的。Storage 角色根据 disk: 属性中列出的磁盘设备标识卷。
 
-```
-注意
-
-在其他文件系统中使用 调整大小 操作可能会破坏您正在使用的设备上的数据
-```
+> **注意**
+> 
+> 在其他文件系统中使用 调整大小 操作可能会破坏您正在使用的设备上的数据
 
 ## 2.10 使用存储 OpenCloud OS 系统角色在 LVM 上对现有文件系统的大小进行调整的 Ansible playbook 示例
 
 本节提供了一个 Ansible playbook 示例。此 playbook 应用存储 OpenCloud OS 系统角色来使用文件系统重新定义 LVM 逻辑卷大小。
 
-```
-警告
-
-在其他文件系统中使用 调整大小 操作可能会破坏您正在使用的设备上的数据。
-```
+> **警告**
+> 
+> 在其他文件系统中使用 调整大小 操作可能会破坏您正在使用的设备上的数据。
 
 **例 2.9 调整 myvg 卷组中现有 mylv1 和 myvl2 逻辑卷大小的 playbook**
 
@@ -575,7 +573,7 @@ roles:
 
 使用存储系统角色，您可以使用  Ansible Automation Platform 在 OpenCloud OS 上配置 RAID 卷。在本小节中，您将了解如何使用可用参数设置 Ansible playbook 来配置 RAID 卷以满足您的要求。
 
-**先决条件**
+**前提条件**
 
 - Ansible Core 软件包安装在控制机器上。
 - 您已在要运行 playbook 的系统上安装了 `rhel-system-roles` 软件包。
@@ -584,9 +582,9 @@ roles:
 **流程**
 
 1. 使用以下内容创建一个新的 *`playbook.yml`* 文件：
-
-```
-  - hosts: all
+   
+   ```
+   - hosts: all
     vars:
         storage_safe_mode: false
         storage_volumes:
@@ -599,13 +597,11 @@ roles:
            state: present
     roles:
         - name: rhel-system-roles.storage
-```
-
-```
-警告
-
-设备名称在某些情况下可能会改变，例如：当您在系统中添加新磁盘时。因此，为了避免数据丢失,我们不建议在 playbook 中使用特定的磁盘名称。
-```
+   ```
+   
+   > **警告**
+   > 
+   > 设备名称在某些情况下可能会改变，例如：当您在系统中添加新磁盘时。因此，为了避免数据丢失,我们不建议在 playbook 中使用特定的磁盘名称。
 
 2. 可选。验证 playbook 语法。
    
@@ -623,7 +619,7 @@ roles:
 
 使用 Storage 系统角色，您可以使用 Ansible Automation Platform 在 OpenCloud OS 上使用 RAID 配置 LVM 池。在本小节中，您将了解如何使用可用参数设置 Ansible playbook 来配置使用 RAID 的 LVM 池。
 
-**先决条件**
+**前提条件**
 
 - Ansible Core 软件包安装在控制机器上。
 - 您已在要运行 playbook 的系统上安装了 `rhel-system-roles` 软件包。
@@ -651,12 +647,10 @@ roles:
    roles:
        - name: rhel-system-roles.storage
    ```
-   
-   ```
-   注意
-   
-   要创建带有 RAID 的 LVM 池，您必须使用 raid_level 参数指定 RAID 类型。
-   ```
+
+> **注意**
+> 
+> 要创建带有 RAID 的 LVM 池，您必须使用 raid_level 参数指定 RAID 类型。
 
 2. 可选。验证 playbook 语法。
    
@@ -706,7 +700,7 @@ roles:
 
 您可以使用存储角色运行 Ansible playbook 来创建和配置那些使用 LUKS 加密的卷。
 
-**先决条件**
+**前提条件**
 
 - 对一个或多个 *受管节点* 的访问和权限，*受管节点* 是您要使用加密策略系统角色配置的系统。
 
@@ -716,13 +710,11 @@ roles:
   
   - `ansible-core` 和 `rhel-system-roles` 软件包已安装 。
 
-```
-重要
-
-OpenCloud OS 提供对基于 Ansible 的自动化需要 Ansible Engine 的独立 Ansible 存储库的访问权限。Ansible Engine 包含命令行实用程序，如 ansible、ansible-playbook、连接器（如 docker 和 podman ）以及许多插件和模块。
-
-OpenCloud OS 引入了 Ansible Core（以 ansible-core 软件包的形式提供），其中包含 Ansible 命令行工具、命令以及小型内置 Ansible 插件。
-```
+> **重要**
+> 
+> OpenCloud OS 提供对基于 Ansible 的自动化需要 Ansible Engine 的独立 Ansible 存储库的访问权限。Ansible Engine 包含命令行实用程序，如 ansible、ansible-playbook、连接器（如 docker 和 podman ）以及许多插件和模块。
+> 
+> OpenCloud OS 引入了 Ansible Core（以 ansible-core 软件包的形式提供），其中包含 Ansible 命令行工具、命令以及小型内置 Ansible 插件。
 
 - 列出受管节点的清单文件。
 
@@ -1241,20 +1233,18 @@ export host1(options1) host2(options2) host3(options3)
 
 `bob.example.com` 可以挂载 NFS 服务器的 `/exported/directory/`。因为在这个示例中没有指定选项，所以 NFS 使用默认选项。
 
-```
-重要
-
-`/etc/exports` 文件的格式要求非常精确，特别是在空格字符的使用方面。需要将导出的文件系统与主机、不同主机间使用空格分隔。但是，除了注释行外，文件中不应该包括其他空格。
-
-例如，下面两行并不具有相同的意义：
-
-``
-/home bob.example.com(rw)
-/home bob.example.com (rw)
-``
-
-第一行仅允许来自 `bob.example.com` 的用户读写 `/home` 目录。第二行允许来自 `bob.example.com` 的用户以只读方式挂载目录（默认），而其他用户可以将其挂载为读/写。
-```
+> **重要**
+> 
+> `/etc/exports` 文件的格式要求非常精确，特别是在空格字符的使用方面。需要将导出的文件系统与主机、不同主机间使用空格分隔。但是，除了注释行外，文件中不应该包括其他空格。
+> 
+> 例如，下面两行并不具有相同的意义：
+> 
+> ```
+> /home bob.example.com(rw)
+> /home bob.example.com (rw)
+> ```
+> 
+> 第一行仅允许来自 `bob.example.com` 的用户读写 `/home` 目录。第二行允许来自 `bob.example.com` 的用户以只读方式挂载目录（默认），而其他用户可以将其挂载为读/写。
 
 #### 默认选项
 
@@ -1354,7 +1344,7 @@ export host(anonuid=uid,anongid=gid)
 
 这个步骤描述了如何启动 NFS 服务器,这是导出 NFS 共享所必需的步骤。
 
-**先决条件**
+**前提条件**
 
 - 对于支持 NFSv3 连接的服务器，`rpcbind` 服务必须处于运行状态。要验证 `rpcbind` 是否处于活动状态，请使用以下命令：
   
@@ -1513,10 +1503,10 @@ NFS 需要 `rpcbind` 服务，该服务为 RPC 服务动态分配端口，并可
    
    ```
    # systemctl restart rpc-statd.service
-   # systemctl restart nfs-server.service
+   # systemctl restart nfs-server.service 
    ```
-   
-   ### 4.11.2  将只使用 NFSv4 的服务器配置在防火墙后运行
+
+### 4.11.2 将只使用 NFSv4 的服务器配置在防火墙后运行
 
 下面的步骤描述了如何将只使用 NFSv4 的服务器配置为在防火墙后运行。
 
@@ -1650,13 +1640,14 @@ NFSv4.1 或更高版本不需要这个过程，因为在后续协议版本中，
 **流程**
 
 1. 启用并启动 `rpc-rquotad` 服务：
-
-```
-# systemctl enable --now rpc-rquotad
-```
-
-    注意
-    如果启用了 rpc-rquotad 服务，其会在启动 nfs-server 服务后自动启动。
+   
+   ```
+   # systemctl enable --now rpc-rquotad
+   ```
+   
+   > **注意**
+   > 
+   > 如果启用了 `rpc-rquotad` 服务，其会在启动 `nfs-server` 服务后自动启动。
 
 2. 为了使配额 RPC 服务可在防火墙后访问，需要打开 TCP（如果启用了 UDP，则为 UDP）端口 875。默认端口号定义在 `/etc/services` 文件中。
    
@@ -1665,10 +1656,10 @@ NFSv4.1 或更高版本不需要这个过程，因为在后续协议版本中，
 3. 默认情况下，远程主机只能读取配额。如果允许客户端设置配额，请将 `-S` 选项附加到 `/etc/sysconfig/rpc-rquotad` 文件中的 `RPCRQUOTADOPTS` 变量中。
 
 4. 重启 `rpc-rquotad` ，使 `/etc/sysconfig/rpc-rquotad` 文件中的更改生效：
-
-```
-# systemctl restart rpc-rquotad
-```
+   
+   ```
+   # systemctl restart rpc-rquotad
+   ```
 
 ## 4.13 启用通过 RDMA(NFSoRDMA) 的 NFS
 
@@ -1844,13 +1835,13 @@ NFS 提供以下传统选项以控制对导出文件的访问：
 
 NFS 的所有版本都支持 RPCSEC_GSS 和 Kerberos 机制。
 
-与 AUTH_SYS 不同，使用 RPCSEC_GSS Kerberos 机制，服务器不依赖客户端来正确表示正在访问文件的用户。相反，加密用于向服务器验证用户身份，从而防止恶意客户端在没有该用户的 Kerberos 凭据的情况下模拟用户。使用 RPCSEC_GSS Kerberos 机制是保护挂载的最直接方法，因为在配置 Kerberos 之后，不需要额外的设置。
+与 AUTH_SYS 不同，使用 RPCSEC_GSS Kerberos 机制，服务器不依赖客户端来正确表示正在访问文件的用户。相反，加密用于向服务器验证用户身份，从而防止恶意客户端在没有该用户的 Kerberos 凭证的情况下模拟用户。使用 RPCSEC_GSS Kerberos 机制是保护挂载的最直接方法，因为在配置 Kerberos 之后，不需要额外的设置。
 
 ## 6.3 配置 NFS 服务器和客户端使用 Kerberos
 
 Kerberos 是一种网络身份验证系统，它允许客户端和服务器通过使用对称加密和受信任的第三方 KDC 来相互进行身份验证。 建议使用身份管理 (IdM) 来设置 Kerberos。
 
-**先决条件**
+**前提条件**
 
 - 已安装并配置 Kerberos 密钥分发中心 (`KDC`)。
 
@@ -1902,3 +1893,789 @@ NFSv4 的另一个重要安全特性是不再使用 `MOUNT` 协议来挂载文�
 默认情况下，NFS 在导出文件系统时使用 *root squashing* 。这会将在其本地计算机上以 root 用户身份访问 NFS 共享的任何人的用户 ID 设置为 `nobody`。Root squashing 由默认选项 `root_squash` 控制；有关此选项的更多信息，请参阅 [NFS 服务器配置](#46-nfs-服务器配置)。
 
 将 NFS 共享导出为只读时，请考虑使用 `all_squash` 选项。此选项使访问导出文件系统的每个用户都使用 `nobody` 用户的用户ID。
+
+# 第 7 章 在 NFS 中启用 pNFS SCSI 布局
+
+您可以将 NFS 服务器和客户端配置为使用 pNFS SCSI 布局来访问数据。pNFS SCSI 在涉及对文件进行更长时间的单客户端访问的用例中非常有用。
+
+**前提条件**
+
+- 客户端和服务器都必须能够向同一个块设备发送 SCSI 命令。也就是说，块设备必须在共享的 SCSI 总线上。
+- 块设备必须包含 XFS 文件系统。
+- SCSI 设备必须支持 SCSI-3 Primary Commands，比如规范中描述的 SCSI Persistent Reservations。
+
+## 7.1 pNFS 技术
+
+pNFS 架构提高了 NFS 的可扩展性。当服务器实现 pNFS 时，客户端能够同时通过多个服务器访问数据。这可以提高性能。
+
+pNFS 在 OpenCloud OS 上支持以下存储协议或布局：
+
+- 文件
+- Flexfiles
+- SCSI
+
+## 7.2 pNFS SCSI 布局
+
+SCSI 布局建立在 pNFS 布局的基础上。布局是依靠 SCSI 设备定义的。它包含一系列固定大小的块来作为逻辑单元 (LU)，这些块必须能够支持 SCSI 持久保留。 LU 设备由它们的 SCSI 设备来识别。
+
+pNFS SCSI 在涉及对文件进行长时间的单客户端访问中表现良好。例如：邮件服务器或虚拟机。
+
+### 客户端和服务器之间的操作
+
+当 NFS 客户端读取或写入文件时，客户端执行 `LAYOUTGET` 操作。服务器以文件在 SCSI 设备上的位置进行响应。客户端可能需要执行 `GETDEVICEINFO` 的附加操作来确定要使用的 SCSI 设备。如果这些操作正常工作，客户端可以直接向 SCSI 设备发出 I/O 请求，而不是向服务器发送 `READ` 和 `WRITE` 操作。
+
+客户端之间的错误或争用可能会导致服务器重新调用布局或不将它们发布给客户端。在这些情况下，客户端回退到向服务器发出 READ 和 WRITE 操作，而不是直接向 SCSI 设备发送 I/O 请求。
+
+要监控操作，请参阅[监控 pNFS SCSI 布局功能](#第-8-章-监控-pnfs-scsi-布局功能)。
+
+**预留设备**
+
+pNFS SCSI 通过预留分配来处理防护。在服务器向客户端发布布局之前，它会保留 SCSI 设备以确保只有注册的客户端才能访问该设备。如果客户端可以向该 SCSI 设备发出命令但未向该设备注册，则该设备上客户端的许多操作都会失败。例如，如果服务器没有为客户端提供该设备的布局，则客户端上的 `blkid` 命令无法显示 XFS 文件系统的 UUID。
+
+服务器不会删除它自己的持久保留。这可以在客户端和服务器重新启动时保护设备上文件系统中的数据。为了重新利用 SCSI 设备，您可能需要手动删除 NFS 服务器上的持久保留。
+
+## 7.3 检查与 pNFS 兼容的 SCSI 设备
+
+此过程检查 SCSI 设备是否支持 pNFS SCSI 布局。
+
+**前提条件**
+
+- 安装 `sg3_util`s 包：
+  
+  ```
+  # yum install sg3_utils
+  ```
+
+**流程**
+
+- 在服务器和客户端上，检查正确的 SCSI 设备支持：
+  
+  ```
+  # sg_persist --in --report-capabilities --verbose path-to-scsi-device
+  ```
+  
+  确保设置了 *Persist Through Power Loss Active* (`PTPL_A`) 位。
+  
+  **例 7.1 支持 pNFS SCSI 的 SCSI 设备**
+  
+  以下是支持 pNFS SCSI 的 SCSI 设备的 `sg_persist` 输出示例。 `PTPL_A` 位报告` 1`。
+  
+  ```
+    inquiry cdb: 12 00 00 00 24 00
+    Persistent Reservation In cmd: 5e 02 00 00 00 00 00 20 00 00
+    LIO-ORG   block11           4.0
+    Peripheral device type: disk
+    Report capabilities response:
+    Compatible Reservation Handling(CRH): 1
+    Specify Initiator Ports Capable(SIP_C): 1
+    All Target Ports Capable(ATP_C): 1
+    Persist Through Power Loss Capable(PTPL_C): 1
+    Type Mask Valid(TMV): 1
+    Allow Commands: 1
+    Persist Through Power Loss Active(PTPL_A): 1
+      Support indicated in Type mask:
+        Write Exclusive, all registrants: 1
+        Exclusive Access, registrants only: 1
+        Write Exclusive, registrants only: 1
+        Exclusive Access: 1
+        Write Exclusive: 1
+        Exclusive Access, all registrants: 1
+  ```
+
+## 7.4 在服务器上设置 pNFS SCSI
+
+此过程将 NFS 服务器配置为导出 pNFS SCSI 布局。
+
+**流程**
+
+1. 在服务器上，挂载在 SCSI 设备上创建的 XFS 文件系统。
+
+2. 将 NFS 服务器配置为导出 NFS 4.1 或更高版本。在 `/etc/nfs.conf` 文件的 `[nfsd]` 部分中设置以下选项：
+   
+   ```
+   [nfsd]
+   
+   vers4.1=y
+   ```
+
+3. 使用 pnfs 选项配置 NFS 服务器以通过 NFS 导出 XFS 文件系统：
+   
+   **例 7.2 /etc/exports 中用于导出 pNFS SCSI 的条目**
+   
+   `/etc/exports` 配置文件中的以下条目将挂载在 `/exported/directory/` 的文件系统导出到 `allowed.example.com` 客户端，来作为来作为 pNFS SCSI 布局：
+   
+   ```
+   /exported/directory allowed.example.com(pnfs)
+   ```
+   
+   > **注意**
+   > 
+   > 必须在整个块设备中创建导出的文件系统，而不仅仅在分区中创建。
+
+## 7.5 在客户端上设置 pNFS SCSI
+
+此过程将 NFS 客户端配置为挂载 pNFS SCSI 布局。
+
+**前提条件**
+
+- NFS 服务器配置为通过 pNFS SCSI 导出 XFS 文件系统。请参阅[在服务器上设置 pNFS SCSI](#74-在服务器上设置-pnfs-scsi)。
+
+**流程**
+
+- 在客户端上，使用 NFS 4.1 或更高版本挂载导出的 XFS 文件系统：
+  
+  ```
+  # mount -t nfs -o nfsvers=4.1 host:/remote/export /local/directory
+  ```
+  
+  不要在没有 NFS 的情况下直接挂载 XFS 文件系统。
+
+## 7.6 释放服务器上的 pNFS SCSI 保留
+
+此过程释放 NFS 服务器在 SCSI 设备上保留的持久保留。这使您可以在不再需要导出 pNFS SCSI 时重新调整 SCSI 设备的用途。
+
+您必须从服务器中删除保留。它不能从不同的 IT Nexus 中删除。
+
+**前提条件**
+
+- 安装 `sg3_utils` 包：
+  
+  ```
+  # yum install sg3_utils
+  ```
+
+**流程**
+
+1. 查询服务器上的现有预留：
+   
+   ```
+   # sg_persist --read-reservation path-to-scsi-device
+   ```
+   
+   **例 7.3 在 /dev/sda 上查询预留**
+   
+   ```
+   # *sg_persist --read-reservation /dev/sda*
+   
+    LIO-ORG   block_1           4.0
+    Peripheral device type: disk
+    PR generation=0x8, Reservation follows:
+      Key=0x100000000000000
+      scope: LU_SCOPE,  type: Exclusive Access, registrants only
+   ```
+
+2. 删除服务器上的现有注册：
+   
+   ```
+   # sg_persist --out \
+              --release \
+              --param-rk=reservation-key \
+              --prout-type=6 \
+              path-to-scsi-device
+   ```
+   
+   **例 7.4 删除 /dev/sda 上的保留**
+   
+   ```
+   # sg_persist --out \
+              --release \
+              --param-rk=0x100000000000000 \
+              --prout-type=6 \
+              /dev/sda
+   
+    LIO-ORG   block_1           4.0
+    Peripheral device type: disk
+   ```
+
+# 第 8 章 监控 pNFS SCSI 布局功能
+
+您可以监视 pNFS 客户端和服务器是否交换正确的 pNFS SCSI 操作，或者它们是否回退到常规 NFS 操作。
+
+**前提条件**
+
+- 配置了 pNFS SCSI 客户端和服务器。
+
+## 8.1 使用 nfsstat 从服务器检查 pNFS SCSI 操作
+
+此过程使用 `nfsstat` 实用程序从服务器监视 pNFS SCSI 操作。
+
+**流程**
+
+1. 监控从服务器服务的操作：
+   
+   ```
+   # watch --differences \
+          "nfsstat --server | egrep --after-context=1 read\|write\|layout"
+   
+   Every 2.0s: nfsstat --server | egrep --after-context=1 read\|write\|layout
+   
+   putrootfh    read         readdir      readlink     remove     rename
+   2         0% 0         0% 1         0% 0         0% 0         0% 0         0%
+   --
+   setcltidconf verify      write        rellockowner bc_ctl     bind_conn
+   0         0% 0         0% 0         0% 0         0% 0         0% 0         0%
+   --
+   getdevlist   layoutcommit layoutget    layoutreturn secinfononam sequence
+   0         0% 29        1% 49        1% 5         0% 0         0% 2435     86%
+   ```
+
+2. 客户端和服务器在以下情况下使用 pNFS SCSI 操作：
+- `layoutget`、`layoutreturn` 和 `layoutcommit` 计数器递增。这意味着服务器正在提供布局。
+- 服务器 `READ` 和 `WRITE` 计数器不会增加。这意味着客户端直接向 SCSI 设备执行 I/O 请求。
+
+## 8.2 使用 mountstats 从客户端检查 pNFS SCSI 操作
+
+此过程使用 `/proc/self/mountstats` 文件从客户端监视 pNFS SCSI 操作。
+
+**流程**
+
+1. 列出每个挂载操作计数器：
+   
+   ```
+   # cat /proc/self/mountstats \
+        | awk /scsi_lun_0/,/^$/ \
+        | egrep device\|READ\|WRITE\|LAYOUT
+   
+   device 192.168.122.73:/exports/scsi_lun_0 mounted on /mnt/rhel7/scsi_lun_0 with fstype nfs4 statvers=1.1
+      nfsv4:  bm0=0xfdffbfff,bm1=0x40f9be3e,bm2=0x803,acl=0x3,sessions,pnfs=LAYOUT_SCSI
+              READ: 0 0 0 0 0 0 0 0
+            WRITE: 0 0 0 0 0 0 0 0
+          READLINK: 0 0 0 0 0 0 0 0
+          READDIR: 0 0 0 0 0 0 0 0
+        LAYOUTGET: 49 49 0 11172 9604 2 19448 19454
+      LAYOUTCOMMIT: 28 28 0 7776 4808 0 24719 24722
+      LAYOUTRETURN: 0 0 0 0 0 0 0 0
+      LAYOUTSTATS: 0 0 0 0 0 0 0 0
+   ```
+
+2. 在结果中：
+- `LAYOUT` 统计信息指示客户端和服务器使用 pNFS SCSI 操作的请求。
+- `READ` 和 `WRITE` 统计信息指示客户端和服务器退回到 NFS 操作的请求。
+
+# 9. FS-Cache 入门
+
+FS-Cache 是一个持久的本地缓存，文件系统可以使用它来获取通过网络检索的数据并将其缓存在本地磁盘上。 这有助于最大限度地减少用户从通过网络安装的文件系统（例如 NFS）访问数据的网络流量。
+
+## 9.1  FS-Cache 概述
+
+下图是 FS-Cache 如何工作的高级说明：
+
+**图 9.1 FS 缓存概述**
+
+![缓存概述图](./images/9-1.png)
+
+FS-Cache 旨在对系统的用户和管理员尽可能透明。与 Solaris 上的 `cachefs` 不同，FS-Cache 允许服务器上的文件系统直接与客户端的本地缓存交互，而无需创建过载的文件系统。对于 NFS，挂载选项指示客户端在启用 FS-cache 的情况下挂载 NFS 共享。挂载点将导致两个内核模块的自动上传：`fscache` 和 `cachefiles`。 cachefilesd 守护进程与内核模块通信以实现缓存。
+
+FS-Cache 不会改变在网络上工作的文件系统的基本操作——它只是为该文件系统提供一个可以永久缓存数据的位置。例如，无论是否启用了 FS-Cache，客户端仍然可以挂载 NFS 共享。此外，缓存的 NFS 可以处理不能全部缓存的文件（无论是单独的还是集体的），因为文件可以被部分缓存，而不必预先完全读取。FS-Cache 还会隐藏发生在客户端文件系统驱动程序的缓存中的所有 I/O 错误。
+
+为了提供缓存服务，FS-Cache 需要一个 *缓存后端* 。缓存后端是配置缓存服务的存储驱动程序，即 `cachefile` 。在这种情况下，FS-Cache 需要一个已挂载的基于块的文件系统，该文件系统支持 `bmap` 和扩展属性（例如 ext3）作为其缓存后端。
+
+支持 FS-Cache 缓存后端所需功能的文件系统包括以下几种（文件系统由 OpenCloud OS 8 实现）：
+
+- ext3（启用扩展属性）
+- ext4
+- XFS
+
+FS-Cache 不能任意缓存任何文件系统，无论是通过网络还是其他方式：必须更改共享文件系统的驱动程序以允许与 FS-Cache、数据存储/检索以及元数据设置和验证进行交互。 FS-Cache 需要缓存的文件系统中 *索引密钥* 和 *一致性数据* 来支持持久性：索引密钥匹配文件系统对象缓存对象，一致性数据确定缓存对象是否仍然有效。
+
+> **注意**
+> 
+> 在 OpenCloud OS 8 中，不会默认安装 **cachefilesd** 软件包，需要手动安装。
+
+## 9.2 性能保证
+
+FS-Cache 不保证提高性能。使用缓存会导致性能损失：例如，缓存的 NFS 共享会将磁盘访问添加到跨网络查找中。虽然 FS-Cache 尽可能尝试异步，但在同步路径（例如读取）中这是不可能的。
+
+例如，使用 FS-Cache 在没有负载的 GigE 网络上的两台计算机之间缓存 NFS 共享，可能不会显示文件访问的任何性能改进。相反，从服务器内存而不是本地磁盘可以更快地满足 NFS 请求。
+
+因此，FS-Cache 的使用是各种因素之间的 *折衷* 。例如，如果使用 FS-Cache 来缓存 NFS 流量，它可能会稍微降低客户端的速度，但会通过满足本地读取请求而不消耗网络带宽来大幅减少网络和服务器负载。
+
+## 9.3 设置缓存
+
+目前，OpenCloud OS 8 只提供缓存文件缓存后端。 cachefilesd 守护进程启动和管理缓存文件。 /etc/cachefilesd.conf 文件控制 cachefiles 如何提供缓存服务。
+
+缓存后端通过在托管缓存的分区上维护一定数量的可用空间来工作。它会根据系统的其他元素用尽可用空间来增加和缩小缓存，使其在根文件系统（例如笔记本电脑）上安全使用。 FS-Cache 对此行为设置默认值，可以通过缓存剔除限制进行配置。有关配置缓存剔除限制的更多信息，请参阅缓存剔除限制配置。
+
+此过程显示如何设置缓存。
+
+**前提条件**
+
+- 软件包已安装并且服务已成功启动。要确保服务正在运行，请使用以下命令：
+  
+  ```
+  # systemctl start cachefilesd
+  # systemctl status cachefilesd
+  ```
+  
+  状态必须处于 *active（running）*。
+
+**流程**
+
+1. 在缓存后端配置哪个目录用作缓存，使用以下参数：
+   
+   ```
+   $ dir /path/to/cache
+   ```
+
+2. 通常，缓存后端目录在 `/etc/cachefilesd.conf` 中设置为 `/var/cache/fscache`，如下所示：
+   
+   ```
+   $ dir /var/cache/fscache
+   ```
+
+3. 如果要更改缓存后端目录，selinux 上下文必须与 `/var/cache/fscache` 相同：
+   
+   ```
+   # semanage fcontext -a -e /var/cache/fscache /path/to/cache
+   # restorecon -Rv /path/to/cache
+   ```
+
+4. 设置缓存时将 */path/to/cache* 替换为目录名称。
+
+5. 如果用于设置 selinux 上下文的给定命令不起作用，请使用以下命令：
+   
+   ```
+   # semanage permissive -a cachefilesd_t
+   # semanage permissive -a cachefiles_kernel_t
+   ```
+   
+   FS-Cache 将缓存存储在托管 *`/path/to/cache`* 的文件系统中。在笔记本电脑上，建议使用根文件系统 (`/`) 作为主机文件系统，但对于台式机，更谨慎的做法是安装专门用于缓存的磁盘分区。
+
+6. 主机文件系统必须支持用户定义的扩展属性； FS-Cache 使用这些属性来存储保持一致性的维护信息。要为 ext3 文件系统（即`device`）启用用户定义的扩展属性，请使用：
+   
+   ```
+   # tune2fs -o user_xattr /dev/device
+   ```
+
+7. 要在挂载时为文件系统启用扩展属性，也可以使用以下命令：
+   
+   ```
+   # mount /dev/device /path/to/cache -o user_xattr
+   ```
+
+8. 配置文件到位后，启动 `cachefilesd` 服务：
+   
+   ```
+   # systemctl start cachefilesd
+   ```
+
+9. 要将 cachefilesd 配置为在引导时启动，请以 root 身份执行以下命令：
+   
+   ```
+   # systemctl enable cachefilesd
+   ```
+
+## 9.4 cache cull limits 配置
+
+`cachefilesd` 守护进程工作原理：通过缓存来自共享文件系统的远程数据来释放磁盘空间。这可能会消耗所有的可用空间，如果磁盘还存在根分区，这可能会很糟糕。为了控制这一点，`cachefilesd` 尝试通过丢弃缓存中的旧对象（即最近访问较少的对象）来维持一定数量的可用空间。这种行为称为缓存筛选 （*cache culling*）。
+
+缓存筛选是根据底层文件系统中块的百分比和可用文件的百分比来完成的。 `/etc/cachefilesd.conf` 中有控制六个限制的设置：
+
+brun ***N%***（**块百分比**），frun ***N%***（**文件百分比**）
+
+  如果缓存中的可用空间量和可用文件的数量超过这两个限制，则关闭筛选。
+
+bcull ***N%***（**块百分比**），fcull ***N%***（**文件百分比**）
+
+  如果缓存中的可用空间量或文件数低于这些限制中的任何一个，则开始筛选。
+
+bstop ***N%***（**块百分比**），fstop ***N%***（**文件百分比**）
+
+  如果缓存中的可用空间量或可用文件数低于这些限制中的任何一个，则不允许进一步分配磁盘空间或文件，直到筛选出再次引发超过这些限制的情况。
+
+每个设置的默认 `N` 值如下：
+
+- `brun`/`frun` - 10%
+- `bcull`/`fcull` - 7%
+- `bstop`/`fstop` - 3%
+
+配置这些设置时，以下必须成立：
+
+- bstop < bcull < brun < 100
+- fstop < fcull < frun < 100
+
+这些是可用空间和可用文件的百分比，不会显示为 100 减去 `df` 程序显示的百分比。
+
+> **重要**
+> 
+> 筛选同时依赖于 bxxx 和 fxxx 对；用户不能单独处理它们。
+
+## 9.5 从 fscache 内核模块检索统计信息
+
+FS-Cache 还跟踪一般统计信息。此过程显示如何获取此信息。
+
+**流程**
+
+1. 要查看 FS-Cache 的统计信息，请使用以下命令：
+   
+   ```
+   # cat /proc/fs/fscache/stats
+   ```
+
+FS-Cache 统计信息包括有关决策点和对象计数器的信息。有关详细信息，请参阅以下内核文档：
+
+`/usr/share/doc/kernel-doc-4.18.0/Documentation/filesystems/caching/fscache.txt`
+
+## 9.6 FS-Cache 参考
+
+本节提供 FS-Cache 的参考信息。
+
+1. 有关 `cachefilesd` 以及如何配置它的更多信息，请参阅 `man cachefilesd` 和 `man cachefilesd.conf`。以下内核文档还提供了其他信息：
+- `/usr/share/doc/cachefilesd/README`
+
+- `/usr/share/man/man5/cachefilesd.conf.5.gz`
+
+- `/usr/share/man/man8/cachefilesd.8.gz`
+2. 有关 FS-Cache 的常用信息，包括有关其设计约束、可用统计数据和功能的详细信息，请参阅以下内核文档：
+   
+   `/usr/share/doc/kernel-doc-4.18.0/Documentation/filesystems/caching/fscache.txt`
+
+# 第 10 章 在 NFS 中使用缓存
+
+除非明确指示，否则 NFS 不会使用缓存。本段说明如何使用 FS-Cache 配置 NFS 挂载。
+
+**前提条件**
+
+- **cachefilesd** 软件包已安装并正在运行。要确保它正在运行，请使用以下命令：
+  
+  ```
+  # systemctl start cachefilesd
+  # systemctl status cachefilesd
+  ```
+  
+  状态处于 *active（running）*。
+
+- 使用以下选项挂载 NFS 共享：
+  
+  ```
+  # mount nfs-share:/ /mount/point -o fsc
+  ```
+  
+  对 *`/mount/point`* 下文件的所有访问都将通过缓存，除非该文件是为直接 I/O 或写入而打开的。有关详细信息，请参阅 [NFS 的缓存限制](#102-nfs-的缓存限制)。
+
+NFS 使用 NFS 文件句柄而不是文件名来索引缓存内容，这意味着硬链接文件正确共享缓存。
+
+NFS 版本 3、4.0、4.1 和 4.2 支持缓存。但是，每个版本都使用不同的分支进行缓存。
+
+## 10.1 配置 NFS 缓存共享
+
+NFS 缓存共享存在几个潜在问题。因为缓存是持久的，所以缓存中的数据块会在四个键的序列上被索引：
+
+- 第 1 级：服务器详情
+- 第 2 级：一些挂载选项；安全类型；FSID；uniquifier
+- 第 3 级：文件处理
+- 第 4 级：文件中的页号
+
+为了避免超级块之间的一致性管理问题，所有需要缓存数据的 NFS 超级块都具有唯一的 2 级键。通常，具有相同源卷和选项的两个 NFS 挂载共享一个超级块.因此，共享缓存在该卷中挂载不同的目录也是如此。
+
+以下是如何使用不同选项配置缓存共享的示例。
+
+**流程**
+
+1. 使用以下命令挂载 NFS 共享：
+   
+   ```
+   mount home0:/disk0/fred /home/fred -o fsc
+   mount home0:/disk0/jim /home/jim -o fsc
+   ```
+   
+   在这里，`/home/fred` 和 `/home/jim` 可能共享超级块，因为它们具有相同的选项，特别是如果它们来自 NFS 服务器 (`home0`) 上的相同卷/分区。
+
+2. 要是不共享超级块，请使用带有以下选项的 `mount` 命令：
+   
+   ```
+   mount home0:/disk0/fred /home/fred -o fsc,rsize=8192
+   mount home0:/disk0/jim /home/jim -o fsc,rsize=65536
+   ```
+   
+   在这种情况下，`/home/fred` 和 `/home/jim` 不会共享超级块，因为它们具有不同的网络访问参数，这些参数是 2 级键的一部分。
+
+3. 要在不共享超级块的情况下将两个子树（`/home/fred1` 和 `/home/fred2`）的内容缓存两次，请使用以下命令：
+   
+   ```
+   mount home0:/disk0/fred /home/fred1 -o fsc,rsize=8192
+   mount home0:/disk0/fred /home/fred2 -o fsc,rsize=65536
+   ```
+
+4. 避免超级块共享的另一种方法是使用 `nosharecache` 参数显式抑制它。使用相同的示例：
+   
+   ```
+   mount home0:/disk0/fred /home/fred -o nosharecache,fsc
+   mount home0:/disk0/jim /home/jim -o nosharecache,fsc
+   ```
+   
+   然而，在这种情况下，只有一个超级块被允许使用缓存，因为没有什么可以区分 `home0:/disk0/fred` 和 `home0:/disk0/jim` 的 2 级键。
+
+5. 要指定超级块的寻址，请在至少一个挂载上添加 *unique-identifie* ，即 `fsc=unique-identifier`：
+   
+   ```
+   mount home0:/disk0/fred /home/fred -o nosharecache,fsc
+   mount home0:/disk0/jim /home/jim -o nosharecache,fsc=jim
+   ```
+   
+   这里，唯一标识符 `jim` 被添加到 `/home/jim` 的缓存中使用的 2 级键中。
+
+> **重要**
+> 
+> 用户不能在具有不同通信或协议参数的超级块之间共享缓存。例如，无法在 NFSv4.0 和 NFSv3 之间或 NFSv4.1 和 NFSv4.2 之间共享，因为它们强制使用不同的超级块。另外，设置读取大小(rsize)等参数可防止缓存共享，因为它也强制使用不同的超级块。
+
+## 10.2  NFS 的缓存限制
+
+NFS 有一些缓存限制：
+
+- 通过直接 I/O 从共享文件系统打开文件会自动绕过缓存。这是因为这种类型的访问必须直接访问服务器。
+- 从共享文件系统打开文件来进行直接 I/O 或写入会刷新文件的缓存副本。 FS-Cache 不会再次缓存文件，直到它不再为直接 I/O 或写操作而打开。
+- 此外，此版本的 FS-Cache 仅缓存常规 NFS 文件。 FS-Cache 不会缓存目录、符号链接、设备文件、FIFO 和套接字。
+
+# 第 11 章 挂载 SMB 共享
+
+服务器消息块 (SMB) 协议实现了一个应用层网络协议，用于访问服务器上的资源，例如文件共享和共享打印机。
+
+> **注意**
+> 
+> 在 SMB 的上下文中，您可以发现提到了通用 Internet 文件系统(CIFS)协议，它是 SMB 的一种方言。 SMB 和 CIFS 协议都受支持，并且挂载 SMB 和 CIFS 共享所涉及的内核模块和实用程序都使用名称 `cifs`。
+
+本节介绍如何从 SMB 服务器挂载共享。
+
+**前提条件**
+
+在 Microsoft Windows 上，默认实现 SMB。在 OpenCloud OS 上，内核的 `cifs.ko` 文件系统模块支持挂载 SMB 共享。因此，安装 `cifs-utils` 包：
+
+```
+# yum install cifs-utils
+```
+
+`cifs-utils` 软件包提供了以下实用程序：
+
+- 挂载 SMB 和 CIFS 共享
+- 管理内核密钥环中的 NT Lan Manager (NTLM) 凭证
+- 在 SMB 和 CIFS 共享的安全描述符中设置和显示访问控制列表 (ACL)
+
+## 11.1 支持的 SMB 协议版本
+
+`cifs.ko` 内核模块支持以下 SMB 协议版本：
+
+- SMB 1
+
+> **警告**
+> 
+> 由于已知的安全问题，SMB1 协议已被弃用，只能在**私有网络上安全使用**。 SMB1 仍然作为受支持的选项提供的主要原因是，它是目前唯一支持 UNIX 扩展的 SMB 协议版本。如果您不需要在 SMB 上使用 UNIX 扩展，强烈建议使用 SMB2 或更高版本。
+
+- SMB 2.0
+- SMB 2.1
+- SMB 3.0
+- SMB 3.1.1
+
+> 注意
+> 
+> 根据协议版本，并非所有 SMB 功能都已实现。
+
+## 11.2  UNIX 扩展支持
+
+Samba 使用 SMB 协议中的 `CAP_UNIX` 功能位来提供 UNIX 扩展功能。 `cifs.ko` 内核模块也支持这些扩展。但是，Samba 和内核模块都只支持 SMB 1 协议中的 UNIX 扩展。
+
+要使用 UNIX 扩展：
+
+1. 将 `/etc/samba/smb.conf` 文件中 `[global]` 部分中的 `server min protocol` 设置为 `NT1`。
+
+2. 通过向 mount 命令提供 `-o vers=1.0` 选项，使用 SMB 1 协议安装共享。例如：
+   
+   ```
+   # mount -t cifs -o vers=1.0,username=user_name //server_name/share_name /mnt/
+   ```
+   
+   默认情况下，内核模块使用 SMB 2 或服务器支持的更高版本的协议。将 `-o vers=1.0` 选项传递给 `mount` 命令会强制内核模块使用使用 UNIX 扩展所需的 SMB 1 协议。
+
+要验证是否启用了 UNIX 扩展，请显示已安装共享的选项：
+
+```
+# mount
+...
+//server/share on /mnt type cifs (...,unix,...)
+```
+
+如果 `unix` 条目显示在挂载选项列表中，则表示启用了 UNIX 扩展。
+
+## 11.3 手动挂载 SMB 共享
+
+如果您只需要临时挂载 SMB 共享，则可以使用 `mount` 工具手动挂载它。
+
+> 注意
+> 
+> 重新启动系统时，手动挂载的共享不会再次自动挂载。要配置 OpenCloud OS 在系统引导时自动挂载共享，请参阅在[系统启动时自动挂载 SMB 共享](#114-系统启动时自动挂载-smb-共享)。
+
+**前提条件**
+
+- `cifs-utils` 软件包已安装。
+
+流程
+
+要手动挂载 SMB 共享，请使用带有 `-t cifs` 参数的 `mount` 工具：
+
+```
+# mount -t cifs -o username=user_name //server_name/share_name /mnt/
+Password for user_name@//server_name/share_name:  password
+```
+
+在 `-o` 参数中，您可以指定用于挂载共享的选项。有关详细信息，请参阅 `mount.cifs(8)` 手册页中的 `OPTIONS` 部分和[常用挂载选项](#116-常用挂载选项)。
+
+**例 11.1 使用加密的 SMB 3.0 连接挂载共享**
+
+要以 *`DOMAIN`*`\Administrator` 用户身份通过​​加密的 SMB 3.0 连接将` \\server\example\` 共享挂载到 /mnt/ 目录：
+
+```
+# mount -t cifs -o username=DOMAIN\Administrator,seal,vers=3.0 //server/example /mnt/
+>Password for DOMAIN\Administrator@//server_name/share_name:  password
+```
+
+## 11.4 系统启动时自动挂载 SMB 共享
+
+如果服务器上永久需要访问已安装的 SMB 共享，请在启动时自动挂载共享。
+
+**前提条件**
+
+- `cifs-utils` 软件包已安装。
+
+**流程**
+
+要在系统引导时自动挂载 SMB 共享，请将共享条目添加到 `/etc/fstab` 文件。例如：
+
+```
+//server_name/share_name /mnt cifs credentials=/root/smb.cred 0 0
+```
+
+> **重要**
+> 
+> 要使系统能够自动挂载共享，您必须将用户名、密码和域名存储在凭证文件中。有关详细信息，请参阅[使用凭证文件对 SMB 共享进行身份验证](#115-使用凭证文件对-smb-共享进行身份验证)。
+
+在 `/etc/fstab` 中的第四个字段中，指定挂载选项，例如凭证文件的路径。有关详细信息，请参阅 `mount.cifs(8)` 手册页中的 `OPTIONS` 部分和[常用挂载选项](#116-常用挂载选项)。
+
+要验证共享是否成功，请输入：
+
+```
+# mount /mnt/
+```
+
+## 11.5 使用凭证文件对 SMB 共享进行身份验证
+
+在某些情况下，例如在引导时自动挂载共享时，应在不输入用户名和密码的情况下挂载共享。要实现这一点，请创建一个凭证文件。
+
+**前提条件**
+
+- `cifs-utils` 软件包已安装。
+
+**流程**
+
+1. 创建一个文件，例如 `/root/smb.cred`，并指定该文件的用户名、密码和域名：
+   
+   ```
+   username=user_name
+   password=password
+   domain=domain_name
+   ```
+
+2. 将权限设置为只允许所有者访问文件：
+
+```
+# chown user_name /root/smb.cred
+# chmod 600 /root/smb.cred
+```
+
+您现在可以将 `credentials=file_name` 挂载选项传递给 `mount` 工具，或在 `/etc/fstab` 文件中使用它来挂载共享，而不会提示您输入用户名和密码。
+
+## 11.6 常用挂载选项
+
+挂载 SMB 共享时，选项确定：
+
+- 如何与服务器建立连接。例如，连接到服务器时使用哪个 SMB 协议版本。
+- 如何将共享挂载到本地文件系统中。例如，如果系统覆盖远程文件和目录权限，使多个本地用户能够访问服务器上的内容。
+
+要在 `/etc/fstab` 文件的第四个字段或 mount 命令的 `-o` 参数中设置多个选项，请用逗号分隔它们。例如，请参阅[使用 multiuser 选项挂载共享](#121-使用-multiuser-选项挂载共享)。
+
+以下列表给出了常用的挂载选项：
+
+| **选项**                      | **描述**                                                                                                                                                          |
+| --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| credentials=*file_name*     | 设置凭证文件的路径。请参阅[使用凭证文件认证到 SMB 共享](#115-使用凭证文件对-smb-共享进行身份验证)。                                                                                                     |
+| dir_mode=*mode*             | 如果服务器不支持 CIFS UNIX 扩展，则设置目录模式。                                                                                                                                  |
+| file_mode=*mode*            | 如果服务器不支持 CIFS UNIX 扩展，则设置文件模式。                                                                                                                                  |
+| password=*password*         | 设置在 SMB 服务器中验证的密码。另外，也可使用 `credentials` 选项指定凭证文件。                                                                                                               |
+| seal                        | 使用 SMB 3.0 或更高的协议版本启用对连接的加密支持。因此，使用 `seal` 和 `vers` 挂载选项来设置成 `3.0` 或更高版本。请参阅 [手动挂载 SMB 共享](#113-手动挂载-smb-共享) 中的示例。                                              |
+| sec=*security_mode*         | 设置安全模式，如 `ntlmsspi`，来启用 NTLMv2 密码哈希和已启用的数据包签名。有关支持值的列表，请查看 `mount.cifs(8)` 手册页中的选项描述。如果服务器不支持 ntlmv2 安全模式，则使用 `sec=ntlmssp`，这是默认值。出于安全考虑，请不要使用不安全的 `ntlm` 安全模式。 |
+| username=*user_name*        | 设置在 SMB 服务器中验证的用户名。另外，也可使用 `credentials` 选项指定凭证文件。                                                                                                              |
+| vers=*SMB_protocol_version* | 设定用于与服务器通信的 SMB 协议版本。                                                                                                                                           |
+
+有关完整列表，请参阅 `mount.cifs(8)` 手册页中的 `OPTIONS` 部分。
+
+# 第 12 章 执行多用户 SMB 挂载
+
+默认情况下，您提供的用于挂载共享的凭证决定了挂载点的访问权限。例如，如果您在挂载共享时使用 *`DOMAIN`*`\example` 用户，则该共享上的所有操作都将以该用户执行，而不管是哪个本地用户执行操作。
+
+但是，在某些情况下，管理员希望在系统启动时自动挂载共享，但用户应使用自己的凭证对共享内容执行操作。 `multiuser` 挂载选项允许您配置此方案。
+
+> **重要**
+> 
+> 要使用 `multiuser` 挂载选项，您必须另外将 `sec` 挂载选项设置为支持以非交互方式提供凭证的安全类型，例如 `krb5` 或带有凭证文件的 `ntlmssp` 选项。有关详细信息，请参阅[以用户身份访问共享](#123-以用户身份访问共享)。
+
+`root` 用户使用多用户选项和对共享内容具有最小访问权限的帐户来安装共享。然后，普通用户可以使用 cifscreds 实用程序将他们的用户名和密码提供给当前会话的内核密钥环。如果用户访问已挂载共享的内容，内核将使用来自内核密钥环的凭证，而不是最初用于挂载共享的凭证。
+
+使用此功能包括以下步骤：
+
+- [使用 `multiuser` 选项安装共享](#121-使用-multiuser-选项挂载共享)。
+- [（可选）验证是否使用 `multiuser` 选项成功安装了共享](#122-验证是否使用-multiuser-选项挂载了-smb-共享)。
+- [以用户身份访问共享](#123-以用户身份访问共享)。
+
+**前提条件**
+
+- `cifs-utils` 软件包已安装。
+
+## 12.1 使用 multiuser 选项挂载共享
+
+在用户可以使用自己的凭证访问共享之前，请使用权限有限的帐户以 `root` 用户身份安装共享。
+
+**流程**
+
+在系统引导时使用 `multiuser` 选项自动挂载共享：
+
+1. 在 /etc/fstab 文件中为共享创建条目。例如：
+   
+   ```
+   //server_name/share_name /mnt cifs multiuser,sec=ntlmssp,credentials=/root/smb.cred 0 0
+   ```
+
+2. 挂载共享：
+   
+   ```
+   # mount /mnt/
+   ```
+
+如果您不想在系统启动时自动挂载共享，请通过将 `-o multiuser,sec=security_type` 传递给 `mount` 命令来手动挂载它。有关手动挂载 SMB 共享的详细信息，请参阅[手动挂载 SMB 共享](#113-手动挂载-smb-共享)。
+
+## 12.2 验证是否使用  multiuser 选项挂载了 SMB 共享
+
+若要验证共享是否是通过 multiuser 选项挂载的，显示挂载选项如下。
+
+**流程**
+
+```
+# mount
+...
+//server_name/share_name on /mnt type cifs (sec=ntlmssp,multiuser,...)
+```
+
+如果 multiuser 条目显示在挂载选项列表中，则该功能已启用。
+
+## 12.3 以用户身份访问共享
+
+如果使用 multiuser 选项挂载 SMB 共享，用户可以将其服务器凭证提供给内核的密钥环：
+
+```
+# cifscreds add -u SMB_user_name server_name
+Password: password
+```
+
+当用户在包含挂载的 SMB 共享的目录中执行操作时，服务器会为该用户提供文件系统权限，而不是在挂载共享时最初使用的权限。
+
+> **注意**
+> 
+> 多个用户可以同时在挂载的共享上使用他们自己的凭证执行操作。
