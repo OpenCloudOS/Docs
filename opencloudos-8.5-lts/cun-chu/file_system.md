@@ -132,7 +132,7 @@ XFS 动态分配内节点。只要文件系统上存在空闲空间，XFS 文件
 
 > **重要**
 > 
-> 除非特定环境需要，否则请勿使用 inode32 选项。inode32 选项可改变分配行为。因此，如果没有可用空间在较低磁盘块中分配 inode ，则可能会出现 ENOSPC 错误。
+> 除非特定环境需要，否则请勿使用 `inode32` 选项。`inode32` 选项可改变分配行为。因此，如果没有可用空间在较低磁盘块中分配 inode ，则可能会出现 `ENOSPC` 错误。
 
 ## 1.6 选择文件系统
 
@@ -298,208 +298,207 @@ Storage 角色可以管理：
 > 
 > 存储角色只能在未分区、整个磁盘或逻辑卷（LV）上创建文件系统。它不能在分区中创建文件系统。
 
-**例 2.1 在/dev/sdb上创建 XFS 的playbook**
-
-```
----
-- hosts: all
-  vars:
-    storage_volumes:
-      - name: barefs
-        type: disk
-        disks:
-          - sdb
-        fs_type: xfs
-  roles:
-    - rhel-system-roles.storage
-```
-
-- 卷名称（示例中的 barefs ）目前是任意的。存储角色根据 disk: 属性下列出的磁盘设备来识别卷。
-- 您可以省略 `fs_type: xfs` 行，因为 XFS 是 OpenCloud OS 中的默认文件系统。
-- 要在 LV 上创建文件系统，请在 `disks: `属性下提供 LVM 设置，包括括起来的卷组。详情请参阅 管理逻辑卷 的 Ansible playbook 示例。
-
-不要提供到 LV 设备的路径。
+> **例 2.1 在/dev/sdb上创建 XFS 的playbook**
+> 
+> ```
+> ---
+> - hosts: all
+>  vars:
+>    storage_volumes:
+>      - name: barefs
+>        type: disk
+>        disks:
+>          - sdb
+>        fs_type: xfs
+>  roles:
+>    - rhel-system-roles.storage
+> ```
+> 
+> - 卷名称（示例中的 barefs ）目前是任意的。存储角色根据 disk: 属性下列出的磁盘设备来识别卷。
+> - 您可以省略 `fs_type: xfs` 行，因为 XFS 是 OpenCloud OS 中的默认文件系统。
+> - 要在 LV 上创建文件系统，请在 `disks: `属性下提供 LVM 设置，包括括起来的卷组。详情请参阅 管理逻辑卷 的 Ansible playbook 示例。
+> 
+> 不要提供到 LV 设备的路径。
 
 ## 2.4 永久挂载系统文件的 Ansible playbook 示例
 
 本节提供了一个 Ansible playbook 示例。此 playbook 应用存储角色用来立即和永久挂载 XFS 文件系统。
 
-**例 2.2 将 /dev/sdb 上的文件系统挂载到 /mnt/data 的 playbook**
-
-```
----
-- hosts: all
-  vars:
-    storage_volumes:
-      - name: barefs
-        type: disk
-        disks:
-          - sdb
-        fs_type: xfs
-        mount_point: /mnt/data
-  roles:
-    - rhel-system-roles.storage
-```
-
-- 此 playbook 将文件系统添加到 `/etc/fstab` 文件中，并立即挂载文件系统。
-- 如果 `/dev/sdb` 设备上的文件系统或挂载点目录不存在，则 playbook 会创建它们。
+> **例 2.2 将 /dev/sdb 上的文件系统挂载到 /mnt/data 的 playbook**
+> 
+> ```
+> ---
+> - hosts: all
+>  vars:
+>   storage_volumes:
+>      - name: barefs
+>        type: disk
+>        disks:
+>          - sdb
+>        fs_type: xfs
+>        mount_point: /mnt/data
+>  roles:
+>    - rhel-system-roles.storage
+> ```
+> 
+> - 此 playbook 将文件系统添加到 `/etc/fstab` 文件中，并立即挂载文件系统。
+> - 如果 `/dev/sdb` 设备上的文件系统或挂载点目录不存在，则 playbook 会创建它们。
 
 ## 2.5 管理逻辑卷的 Ansible playbook 示例
 
 本节提供了一个 Ansible playbook 示例。此 playbook 应用存储角色在卷组中创建 LVM 逻辑卷。
 
-**例 2.3 在 myvg 卷组中创建 mylv 逻辑卷的 playbook**
-
-```
-- hosts: all
-  vars:
-    storage_pools:
-      - name: myvg
-        disks:
-          - sda
-          - sdb
-          - sdc
-        volumes:
-          - name: mylv
-            size: 2G
-            fs_type: ext4
-            mount_point: /mnt
-  roles:
-    - rhel-system-roles.storage
-```
-
-- `myvg` 卷组由以下磁盘组成：
-  
-  - `/dev/sda`
-  - `/dev/sdb`
-  - `/dev/sdc`
-
-- 如果 `myvg` 卷组已存在，则 playbook 会将逻辑卷添加到卷组。
-
-- 如果 `myvg` 卷组不存在，则 playbook 会创建它。
-
-- playbook 在 `mylv` 逻辑卷上创建 Ext4 文件系统，并在 `/mnt` 上永久挂载文件系统。
+> **例 2.3 在 myvg 卷组中创建 mylv 逻辑卷的 playbook**
+> 
+> ```
+> - hosts: all
+>  vars:
+>    storage_pools:
+>      - name: myvg
+>        disks:
+>          - sda
+>          - sdb
+>          - sdc
+>        volumes:
+>          - name: mylv
+>            size: 2G
+>            fs_type: ext4
+>            mount_point: /mnt
+>  roles:
+>    - rhel-system-roles.storage
+> ```
+> 
+> - `myvg` 卷组由以下磁盘组成：
+>   
+>   - `/dev/sda`
+>   - `/dev/sdb`
+>   - `/dev/sdc`
+> 
+> - 如果 `myvg` 卷组已存在，则 playbook 会将逻辑卷添加到卷组。
+> 
+> - 如果 `myvg` 卷组不存在，则 playbook 会创建它。
+> 
+> - playbook 在 `mylv` 逻辑卷上创建 Ext4 文件系统，并在 `/mnt` 上永久挂载文件系统。
 
 ## 2.5 启用在线快丢弃的 Ansible playbook 示例
 
 本节提供了一个 Ansible playbook 示例。此 playbook 应用存储角色用来挂载启用了在线块丢弃的 XFS 文件系统。
 
-**例 2.4 一个 playbook，它在 `/mnt/data/` 上启用在线块丢弃功能**
-
-```
----
-- hosts: all
-  vars:
-    storage_volumes:
-      - name: barefs
-        type: disk
-        disks:
-          - sdb
-        fs_type: xfs
-        mount_point: /mnt/data
-        mount_options: discard
-  roles:
-    - rhel-system-roles.storage
-```
+> **例 2.4 一个 playbook，它在 `/mnt/data/` 上启用在线块丢弃功能**
+> 
+> ```
+> ---
+> - hosts: all
+>  vars:
+>    storage_volumes:
+>      - name: barefs
+>        type: disk
+>        disks:
+>          - sdb
+>        fs_type: xfs
+>        mount_point: /mnt/data
+>        mount_options: discard
+>  roles:
+>    - rhel-system-roles.storage
+> ```
 
 ## 2.7 创建挂载 Ext4 文件系统的 Ansible playbook 示例
 
 本节提供了一个 Ansible playbook 示例。此 playbook 应用存储角色来创建和挂载 Ext4 文件系统。
 
-**例 2.5 在 `/dev/sdb` 上创建 Ext4 并挂载到 `/mnt/data` 的 playbook**
-
-```
----
-- hosts: all
-  vars:
-    storage_volumes:
-      - name: barefs
-        type: disk
-        disks:
-          - sdb
-        fs_type: ext4
-        fs_label: label-name
-        mount_point: /mnt/data
-  roles:
-    - rhel-system-roles.storage
-```
-
-- playbook 在 `/dev/sdb` 磁盘上创建文件系统。
-- playbook 将文件系统永久挂载在 `/mnt/data` 目录。
-- 文件系统的标签是 `label-name`。
+> **例 2.5 在 `/dev/sdb` 上创建 Ext4 并挂载到 `/mnt/data` 的 playbook**
+> 
+> ```
+> ---
+> - hosts: all
+>  vars:
+>    storage_volumes:
+>      - name: barefs
+>        type: disk
+>        disks:
+>          - sdb
+>        fs_type: ext4
+>        fs_label: label-name
+>        mount_point: /mnt/data
+>  roles:
+>    - rhel-system-roles.storage
+> ```
+> 
+> - playbook 在 `/dev/sdb` 磁盘上创建文件系统。
+> - playbook 将文件系统永久挂载在 `/mnt/data` 目录。
+> - 文件系统的标签是 `label-name`。
 
 ## 2.8 创建和挂载 ext3 文件系统的 Ansible playbook 示例
 
 本节提供了一个 Ansible playbook 示例。此 playbook 应用存储角色来创建和挂载 Ext3 文件系统。
 
-**例 2.6 在 `/dev/sdb` 上创建 Ext3 ，并将其挂载在 `/mnt/data` 的 playbook**
-
-```
----
-- hosts: all
-  vars:
-    storage_volumes:
-      - name: barefs
-        type: disk
-        disks:
-          - sdb
-        fs_type: ext3
-        fs_label: label-name
-        mount_point: /mnt/data
-  roles:
-    - rhel-system-roles.storage
-```
-
-- playbook 在 `/dev/sdb` 磁盘上创建文件系统。
-- playbook 将文件系统永久挂载在 `/mnt/data` 目录。
-- 文件系统的标签是 `label-name`。
+> **例 2.6 在 `/dev/sdb` 上创建 Ext3 ，并将其挂载在 `/mnt/data` 的 playbook**
+> 
+> ```
+> ---
+> - hosts: all
+>  vars:
+>    storage_volumes:
+>      - name: barefs
+>        type: disk
+>        disks:
+>          - sdb
+>        fs_type: ext3
+>        fs_label: label-name
+>        mount_point: /mnt/data
+>  roles:
+>    - rhel-system-roles.storage
+> ```
+> 
+> - playbook 在 `/dev/sdb` 磁盘上创建文件系统。
+> - playbook 将文件系统永久挂载在 `/mnt/data` 目录。
+> - 文件系统的标签是 `label-name`。
 
 ## 2.9 使用存储 OpenCloud OS系统角色对现有 Ext4 或 Ext3 文件系统调整大小的 Ansible playbook 示例
 
 本节提供了一个 Ansible playbook 示例。此 playbook 应用存储角色来调整块设备上现有的 Ext4 或 Ext3 文件系统的大小。
 
-**例 2.7 在磁盘上设置单个卷的 playbook**
-
-```
----
-- name: Create a disk device mounted on /opt/barefs
-- hosts: all
-  vars:
-    storage_volumes:
-      - name: barefs
-        type: disk
-        disks:
-          - /dev/sdb
-    size: 12 GiB
-        fs_type: ext4
-        mount_point: /opt/barefs
-  roles:
-    - rhel-system-roles.storage
-```
+> **例 2.7 在磁盘上设置单个卷的 playbook**
+> 
+> ```
+> ---
+> - name: Create a disk device mounted on /opt/barefs
+> - hosts: all
+>  vars:
+>    storage_volumes:
+>      - name: barefs
+>        type: disk
+>        disks:
+>          - /dev/sdb
+>    size: 12 GiB
+>        fs_type: ext4
+>        mount_point: /opt/barefs
+>  roles:
+>    - rhel-system-roles.storage
+> ```
 
 - 如果上例中的卷已存在，要调整卷的大小，您需要运行相同的 playbook，使用不同的 `size` 参数值。例如：
 
-**例 2.8 在 `/dev/sdb`上调整 `ext4` 大小的 playbook**
-opencloud
-
-```
----
-- name: Create a disk device mounted on /opt/barefs
-- hosts: all
-  vars:
-    storage_volumes:
-      - name: barefs
-        type: disk
-        disks:
-          - /dev/sdb
-    size: 10 GiB
-        fs_type: ext4
-        mount_point: /opt/barefs
-  roles:
-    - rhel-system-roles.storage
-```
-
-- 卷名称（示例中的 barefs）当前是任意的。Storage 角色根据 disk: 属性中列出的磁盘设备标识卷。
+> **例 2.8 在 `/dev/sdb`上调整 `ext4` 大小的 playbook**
+> 
+> ```
+> ---
+> - name: Create a disk device mounted on /opt/barefs
+> - hosts: all
+>  vars:
+>    storage_volumes:
+>      - name: barefs
+>        type: disk
+>        disks:
+>          - /dev/sdb
+>    size: 10 GiB
+>        fs_type: ext4
+>        mount_point: /opt/barefs
+>  roles:
+>    - rhel-system-roles.storage
+> ```
+> 
+> - 卷名称（示例中的 barefs）当前是任意的。Storage 角色根据 disk: 属性中列出的磁盘设备标识卷。
 
 > **注意**
 > 
@@ -513,61 +512,61 @@ opencloud
 > 
 > 在其他文件系统中使用 调整大小 操作可能会破坏您正在使用的设备上的数据。
 
-**例 2.9 调整 myvg 卷组中现有 mylv1 和 myvl2 逻辑卷大小的 playbook**
-
-```
----
-
-- hosts: all
-   vars:
-    storage_pools:
-      - name: myvg
-        disks:
-          - /dev/sda
-          - /dev/sdb
-          - /dev/sdc
-        volumes:
-            - name: mylv1
-              size: 10 GiB
-              fs_type: ext4
-              mount_point: /opt/mount1
-            - name: mylv2
-              size: 50 GiB
-              fs_type: ext4
-              mount_point: /opt/mount2
-
-- name: Create LVM pool over three disks
-  incude_role:
-    name: rhel-system-roles.storage
-```
-
-- 此 playbook 调整以下现有文件系统的大小：
-  
-  - `mylv1` 卷上的 Ext4 文件系统挂载在 `/opt/mount1`，大小调整为 10 GiB。
-  - `mylv2` 卷上的 Ext4 文件系统挂载在 `/opt/mount2`，大小调整为 50 GiB。
+> **例 2.9 调整 myvg 卷组中现有 mylv1 和 myvl2 逻辑卷大小的 playbook**
+> 
+> ```
+> ---
+> 
+> - hosts: all
+>   vars:
+>    storage_pools:
+>      - name: myvg
+>        disks:
+>          - /dev/sda
+>          - /dev/sdb
+>          - /dev/sdc
+>        volumes:
+>            - name: mylv1
+>              size: 10 GiB
+>              fs_type: ext4
+>              mount_point: /opt/mount1
+>            - name: mylv2
+>              size: 50 GiB
+>              fs_type: ext4
+>              mount_point: /opt/mount2
+> 
+> - name: Create LVM pool over three disks
+>  incude_role:
+>    name: rhel-system-roles.storage
+> ```
+> 
+> - 此 playbook 调整以下现有文件系统的大小：
+>   
+>   - `mylv1` 卷上的 Ext4 文件系统挂载在 `/opt/mount1`，大小调整为 10 GiB。
+>     - `mylv2` 卷上的 Ext4 文件系统挂载在 `/opt/mount2`，大小调整为 50 GiB。
 
 ## 2.11 使用存储 OpenCloud OS 系统角色创建交换分区的 Ansible playbook 示例
 
 本节提供了一个 Ansible playbook 示例。此 playbook 应用存储角色来创建交换分区（如果不存在的话），或者使用默认参数在块设备上修改交换分区（如果已存在的话）。
 
-**例 2.10 创建或修改 `/dev/sdb` 上现有 XFS 的 playbook**
-
-```
-name: Create a disk device with swap
-hosts: all
-vars:
-  storage_volumes:```
-- name: swap_fs
-  type: disk
-  disks:
-    - /dev/sdb
-size: 15 GiB
- fs_type: swap
-roles:
-- rhel-system-roles.storage 
-```
-
-- 卷名称（示例中的 `swap_fs` ）目前是任意的。存储角色根据 `disk:` 属性下列出的磁盘设备来识别卷。
+> **例 2.10 创建或修改 `/dev/sdb` 上现有 XFS 的 playbook**
+> 
+> ```
+> name: Create a disk device with swap
+> hosts: all
+> vars:
+>  storage_volumes:```
+> - name: swap_fs
+>  type: disk
+>  disks:
+>    - /dev/sdb
+> size: 15 GiB
+> fs_type: swap
+> roles:
+> - rhel-system-roles.storage 
+> ```
+> 
+> - 卷名称（示例中的 `swap_fs` ）目前是任意的。存储角色根据 `disk:` 属性下列出的磁盘设备来识别卷。
 
 ## 2.12 使用存储系统角色配置 RAID 卷
 
@@ -670,25 +669,27 @@ roles:
 
 **例 2.11 在 `myvg` 卷组中创建 `mylv1` LVM VDO 卷的 playbook**
 
-```
----
-- name: Create LVM VDO volume under volume group 'myvg'
-  hosts: all
-  roles:
-    -opencloudos-system-roles.storage
-  vars:
-    storage_pools:
-     - name: myvg
-       disks:
-         - /dev/sdb
-       volumes:
-         - name: mylv1
-           compression: true
-           deduplication: true
-           vdo_pool_size: 10 GiB
-           size: 30 GiB
-           mount_point: /mnt/app/shared
-```
+> 
+> 
+> ```
+> ---
+> - name: Create LVM VDO volume under volume group 'myvg'
+>  hosts: all
+>  roles:
+>    -opencloudos-system-roles.storage
+>  vars:
+>    storage_pools:
+>     - name: myvg
+>       disks:
+>         - /dev/sdb
+>       volumes:
+>         - name: mylv1
+>           compression: true
+>           deduplication: true
+>           vdo_pool_size: 10 GiB
+>           size: 30 GiB
+>           mount_point: /mnt/app/shared
+> ```
 
 在本例中，`compression` 和 `deduplication` 都被设置为 true，这里指定使用 VDO。下面描述了这些参数的用法：
 
@@ -755,30 +756,30 @@ roles:
 
 本节提供了一个 Ansible playbook 示例。此 playbook 应用存储系统角色来通过存储池百分比的形式表示逻辑卷管理卷(LVM)的大小。
 
-**例 2.12 将卷大小表示为池容量百分比的 playbook**
-
-```
----
-- name: Express volume sizes as a percentage of the pool's total size
-  hosts: all
-  roles
-    - rhel-system-roles.storage
-  vars:
-    storage_pools:
-    - name: myvg
-      disks:
-        - /dev/sdb
-      volumes:
-        - name: data
-          size: 60%
-          mount_point: /opt/mount/data
-        - name: web
-          size: 30%
-          mount_point: /opt/mount/web
-        - name: cache
-          size: 10%
-          mount_point: /opt/cache/mount
-```
+> **例 2.12 将卷大小表示为池容量百分比的 playbook**
+> 
+> ```
+> ---
+> - name: Express volume sizes as a percentage of the pool's total size
+>  hosts: all
+>  roles
+>    - rhel-system-roles.storage
+>  vars:
+>    storage_pools:
+>    - name: myvg
+>      disks:
+>        - /dev/sdb
+>      volumes:
+>        - name: data
+>          size: 60%
+>          mount_point: /opt/mount/data
+>        - name: web
+>          size: 30%
+>          mount_point: /opt/mount/web
+>        - name: cache
+>          size: 10%
+>          mount_point: /opt/cache/mount
+> ```
 
 这个示例将 LVM 卷的大小以存储池容量的百分比表示，例如："60%"。另外，您还可以将 LVM 卷的大小以文件系统中人类可读的类型（如 "10g" 或 "50 GiB"）使用存储池容量的百分比表示。
 
@@ -1223,15 +1224,15 @@ export host1(options1) host2(options2) host3(options3)
 
   用于主机的选项
 
-**例 4.1 一个简单的 /etc/exports 文件**
-
-在最简单的形式中，`/etc/exports` 文件只指定导出的目录和允许访问它的主机：
-
-```
-/exported/directory bob.example.com
-```
-
-`bob.example.com` 可以挂载 NFS 服务器的 `/exported/directory/`。因为在这个示例中没有指定选项，所以 NFS 使用默认选项。
+> **例 4.1 一个简单的 /etc/exports 文件**
+> 
+> 在最简单的形式中，`/etc/exports` 文件只指定导出的目录和允许访问它的主机：
+> 
+> ```
+> /exported/directory bob.example.com
+> ```
+> 
+> `bob.example.com` 可以挂载 NFS 服务器的 `/exported/directory/`。因为在这个示例中没有指定选项，所以 NFS 使用默认选项。
 
 > **重要**
 > 
@@ -1378,36 +1379,36 @@ export host(anonuid=uid,anongid=gid)
    # rpcinfo -p
    ```
    
-   **例 4.2. rpcinfo -p 命令输出**
-   
-   下面是一个这个命令的输出示例：
-   
-   ```
-   program vers proto   port  service
-   100000    4   tcp    111  portmapper
-   100000    3   tcp    111  portmapper
-   100000    2   tcp    111  portmapper
-   100000    4   udp    111  portmapper
-   100000    3   udp    111  portmapper
-   100000    2   udp    111  portmapper
-   100005    1   udp  20048  mountd
-   100005    1   tcp  20048  mountd
-   100005    2   udp  20048  mountd
-   100005    2   tcp  20048  mountd
-   100005    3   udp  20048  mountd
-   100005    3   tcp  20048  mountd
-   100024    1   udp  37769  status
-   100024    1   tcp  49349  status
-   100003    3   tcp   2049  nfs
-   100003    4   tcp   2049  nfs
-   100227    3   tcp   2049  nfs_acl
-   100021    1   udp  56691  nlockmgr
-   100021    3   udp  56691  nlockmgr
-   100021    4   udp  56691  nlockmgr
-   100021    1   tcp  46193  nlockmgr
-   100021    3   tcp  46193  nlockmgr
-   100021    4   tcp  46193  nlockmgr
-   ```
+   > **例 4.2. rpcinfo -p 命令输出**
+   > 
+   > 下面是一个这个命令的输出示例：
+   > 
+   > ```
+   > program vers proto   port  service
+   > 100000    4   tcp    111  portmapper
+   > 100000    3   tcp    111  portmapper
+   > 100000    2   tcp    111  portmapper
+   > 100000    4   udp    111  portmapper
+   > 100000    3   udp    111  portmapper
+   > 100000    2   udp    111  portmapper
+   > 100005    1   udp  20048  mountd
+   > 100005    1   tcp  20048  mountd
+   > 100005    2   udp  20048  mountd
+   > 100005    2   tcp  20048  mountd
+   > 100005    3   udp  20048  mountd
+   > 100005    3   tcp  20048  mountd
+   > 100024    1   udp  37769  status
+   > 100024    1   tcp  49349  status
+   > 100003    3   tcp   2049  nfs
+   > 100003    4   tcp   2049  nfs
+   > 100227    3   tcp   2049  nfs_acl
+   > 100021    1   udp  56691  nlockmgr
+   > 100021    3   udp  56691  nlockmgr
+   > 100021    4   udp  56691  nlockmgr
+   > 100021    1   tcp  46193  nlockmgr
+   > 100021    3   tcp  46193  nlockmgr
+   > 100021    4   tcp  46193  nlockmgr
+   > ```
    
    如果其中一个 NFS 服务没有正确启动，`rpcbind` 将不能将来自客户端的对该服务的 RPC 请求映射到正确的端口。。
 
@@ -1503,7 +1504,7 @@ NFS 需要 `rpcbind` 服务，该服务为 RPC 服务动态分配端口，并可
    
    ```
    # systemctl restart rpc-statd.service
-   # systemctl restart nfs-server.service 
+   # systemctl restart nfs-server.service
    ```
 
 ### 4.11.2 将只使用 NFSv4 的服务器配置在防火墙后运行
@@ -1764,54 +1765,54 @@ Requested NFS version or transport protocol is not supported.
   # netstat --listening --tcp --udp
   ```
   
-  **例 5.1 仅 NFSv4 服务器上的输出**
+  > **例 5.1 仅 NFSv4 服务器上的输出**
+  > 
+  > 以下是仅使用 NFSv4 服务器上的 `netstat` 输出示例；禁用对 `RPCBIND`、MOUNT 和 NSM 的监听。这里，`nfs` 是唯一一个监听 NFS 的服务：
+  > 
+  > ```
+  > # netstat --listening --tcp --udp
+  > 
+  > Active Internet connections (only servers)
+  > Proto Recv-Q Send-Q Local Address           Foreign Address         State
+  > tcp        0      0 0.0.0.0:ssh             0.0.0.0:*               LISTEN
+  > tcp        0      0 0.0.0.0:nfs             0.0.0.0:*               LISTEN
+  > tcp6       0      0 [::]:ssh                [::]:*                  LISTEN
+  > tcp6       0      0 [::]:nfs                [::]:*                  LISTEN
+  > udp        0      0 localhost.locald:bootpc 0.0.0.0:*
+  > ```
   
-  以下是仅使用 NFSv4 服务器上的 `netstat` 输出示例；禁用对 `RPCBIND`、MOUNT 和 NSM 的监听。这里，`nfs` 是唯一一个监听 NFS 的服务：
-  
-  ```
-  # netstat --listening --tcp --udp
-  
-  Active Internet connections (only servers)
-  Proto Recv-Q Send-Q Local Address           Foreign Address         State
-  tcp        0      0 0.0.0.0:ssh             0.0.0.0:*               LISTEN
-  tcp        0      0 0.0.0.0:nfs             0.0.0.0:*               LISTEN
-  tcp6       0      0 [::]:ssh                [::]:*                  LISTEN
-  tcp6       0      0 [::]:nfs                [::]:*                  LISTEN
-  udp        0      0 localhost.locald:bootpc 0.0.0.0:*
-  ```
-  
-  **例 5.2 配置仅 NFSv4 服务器之前的输出**
-  
-  相比之下，配置仅 NFSv4 服务器之前的 `netstat` 输出包括 `sunrpc` 和 `mountd` 服务：
-  
-  ```
-  # netstat --listening --tcp --udp
-  
-  Active Internet connections (only servers)
-  Proto Recv-Q Send-Q Local Address           Foreign Address State
-  tcp        0      0 0.0.0.0:ssh             0.0.0.0:*       LISTEN
-  tcp        0      0 0.0.0.0:40189           0.0.0.0:*       LISTEN
-  tcp        0      0 0.0.0.0:46813           0.0.0.0:*       LISTEN
-  tcp        0      0 0.0.0.0:nfs             0.0.0.0:*       LISTEN
-  tcp        0      0 0.0.0.0:sunrpc          0.0.0.0:*       LISTEN
-  tcp        0      0 0.0.0.0:mountd          0.0.0.0:*       LISTEN
-  tcp6       0      0 [::]:ssh                [::]:*          LISTEN
-  tcp6       0      0 [::]:51227              [::]:*          LISTEN
-  tcp6       0      0 [::]:nfs                [::]:*          LISTEN
-  tcp6       0      0 [::]:sunrpc             [::]:*          LISTEN
-  tcp6       0      0 [::]:mountd             [::]:*          LISTEN
-  tcp6       0      0 [::]:45043              [::]:*          LISTEN
-  udp        0      0 localhost:1018          0.0.0.0:*
-  udp        0      0 localhost.locald:bootpc 0.0.0.0:*
-  udp        0      0 0.0.0.0:mountd          0.0.0.0:*
-  udp        0      0 0.0.0.0:46672           0.0.0.0:*
-  udp        0      0 0.0.0.0:sunrpc          0.0.0.0:*
-  udp        0      0 0.0.0.0:33494           0.0.0.0:*
-  udp6       0      0 [::]:33734              [::]:*
-  udp6       0      0 [::]:mountd             [::]:*
-  udp6       0      0 [::]:sunrpc             [::]:*
-  udp6       0      0 [::]:40243              [::]:*
-  ```
+  > **例 5.2 配置仅 NFSv4 服务器之前的输出**
+  > 
+  > 相比之下，配置仅 NFSv4 服务器之前的 `netstat` 输出包括 `sunrpc` 和 `mountd` 服务：
+  > 
+  > ```
+  > # netstat --listening --tcp --udp
+  > 
+  > Active Internet connections (only servers)
+  > Proto Recv-Q Send-Q Local Address           Foreign Address State
+  > tcp        0      0 0.0.0.0:ssh             0.0.0.0:*       LISTEN
+  > tcp        0      0 0.0.0.0:40189           0.0.0.0:*       LISTEN
+  > tcp        0      0 0.0.0.0:46813           0.0.0.0:*       LISTEN
+  > tcp        0      0 0.0.0.0:nfs             0.0.0.0:*       LISTEN
+  > tcp        0      0 0.0.0.0:sunrpc          0.0.0.0:*       LISTEN
+  > tcp        0      0 0.0.0.0:mountd          0.0.0.0:*       LISTEN
+  > tcp6       0      0 [::]:ssh                [::]:*          LISTEN
+  > tcp6       0      0 [::]:51227              [::]:*          LISTEN
+  > tcp6       0      0 [::]:nfs                [::]:*          LISTEN
+  > tcp6       0      0 [::]:sunrpc             [::]:*          LISTEN
+  > tcp6       0      0 [::]:mountd             [::]:*          LISTEN
+  > tcp6       0      0 [::]:45043              [::]:*          LISTEN
+  > udp        0      0 localhost:1018          0.0.0.0:*
+  > udp        0      0 localhost.locald:bootpc 0.0.0.0:*
+  > udp        0      0 0.0.0.0:mountd          0.0.0.0:*
+  > udp        0      0 0.0.0.0:46672           0.0.0.0:*
+  > udp        0      0 0.0.0.0:sunrpc          0.0.0.0:*
+  > udp        0      0 0.0.0.0:33494           0.0.0.0:*
+  > udp6       0      0 [::]:33734              [::]:*
+  > udp6       0      0 [::]:mountd             [::]:*
+  > udp6       0      0 [::]:sunrpc             [::]:*
+  > udp6       0      0 [::]:40243              [::]:*
+  > ```
 
 # 第 6 章 保护 NFS
 
@@ -1920,7 +1921,7 @@ SCSI 布局建立在 pNFS 布局的基础上。布局是依靠 SCSI 设备定义
 
 pNFS SCSI 在涉及对文件进行长时间的单客户端访问中表现良好。例如：邮件服务器或虚拟机。
 
-### 客户端和服务器之间的操作
+**客户端和服务器之间的操作**
 
 当 NFS 客户端读取或写入文件时，客户端执行 `LAYOUTGET` 操作。服务器以文件在 SCSI 设备上的位置进行响应。客户端可能需要执行 `GETDEVICEINFO` 的附加操作来确定要使用的 SCSI 设备。如果这些操作正常工作，客户端可以直接向 SCSI 设备发出 I/O 请求，而不是向服务器发送 `READ` 和 `WRITE` 操作。
 
@@ -1956,31 +1957,31 @@ pNFS SCSI 通过预留分配来处理防护。在服务器向客户端发布布�
   
   确保设置了 *Persist Through Power Loss Active* (`PTPL_A`) 位。
   
-  **例 7.1 支持 pNFS SCSI 的 SCSI 设备**
-  
-  以下是支持 pNFS SCSI 的 SCSI 设备的 `sg_persist` 输出示例。 `PTPL_A` 位报告` 1`。
-  
-  ```
-    inquiry cdb: 12 00 00 00 24 00
-    Persistent Reservation In cmd: 5e 02 00 00 00 00 00 20 00 00
-    LIO-ORG   block11           4.0
-    Peripheral device type: disk
-    Report capabilities response:
-    Compatible Reservation Handling(CRH): 1
-    Specify Initiator Ports Capable(SIP_C): 1
-    All Target Ports Capable(ATP_C): 1
-    Persist Through Power Loss Capable(PTPL_C): 1
-    Type Mask Valid(TMV): 1
-    Allow Commands: 1
-    Persist Through Power Loss Active(PTPL_A): 1
-      Support indicated in Type mask:
-        Write Exclusive, all registrants: 1
-        Exclusive Access, registrants only: 1
-        Write Exclusive, registrants only: 1
-        Exclusive Access: 1
-        Write Exclusive: 1
-        Exclusive Access, all registrants: 1
-  ```
+  > **例 7.1 支持 pNFS SCSI 的 SCSI 设备**
+  > 
+  > 以下是支持 pNFS SCSI 的 SCSI 设备的 `sg_persist` 输出示例。 `PTPL_A` 位报告` 1`。
+  > 
+  > ```
+  >    inquiry cdb: 12 00 00 00 24 00
+  >    Persistent Reservation In cmd: 5e 02 00 00 00 00 00 20 00 00
+  >  LIO-ORG   block11           4.0
+  >  Peripheral device type: disk
+  > Report capabilities response:
+  >  Compatible Reservation Handling(CRH): 1
+  >  Specify Initiator Ports Capable(SIP_C): 1
+  >  All Target Ports Capable(ATP_C): 1
+  >  Persist Through Power Loss Capable(PTPL_C): 1
+  >  Type Mask Valid(TMV): 1
+  >  Allow Commands: 1
+  >  Persist Through Power Loss Active(PTPL_A): 1
+  >    Support indicated in Type mask:
+  >      Write Exclusive, all registrants: 1
+  >      Exclusive Access, registrants only: 1
+  >      Write Exclusive, registrants only: 1
+  >      Exclusive Access: 1
+  >      Write Exclusive: 1
+  >      Exclusive Access, all registrants: 1
+  > ```
 
 ## 7.4 在服务器上设置 pNFS SCSI
 
@@ -2000,13 +2001,13 @@ pNFS SCSI 通过预留分配来处理防护。在服务器向客户端发布布�
 
 3. 使用 pnfs 选项配置 NFS 服务器以通过 NFS 导出 XFS 文件系统：
    
-   **例 7.2 /etc/exports 中用于导出 pNFS SCSI 的条目**
-   
-   `/etc/exports` 配置文件中的以下条目将挂载在 `/exported/directory/` 的文件系统导出到 `allowed.example.com` 客户端，来作为来作为 pNFS SCSI 布局：
-   
-   ```
-   /exported/directory allowed.example.com(pnfs)
-   ```
+   > **例 7.2 /etc/exports 中用于导出 pNFS SCSI 的条目**
+   > 
+   > `/etc/exports` 配置文件中的以下条目将挂载在 `/exported/directory/` 的文件系统导出到 `allowed.example.com` 客户端，来作为来作为 pNFS SCSI 布局：
+   > 
+   > ```
+   > /exported/directory allowed.example.com(pnfs)
+   > ```
    
    > **注意**
    > 
@@ -2052,17 +2053,17 @@ pNFS SCSI 通过预留分配来处理防护。在服务器向客户端发布布�
    # sg_persist --read-reservation path-to-scsi-device
    ```
    
-   **例 7.3 在 /dev/sda 上查询预留**
-   
-   ```
-   # *sg_persist --read-reservation /dev/sda*
-   
-    LIO-ORG   block_1           4.0
-    Peripheral device type: disk
-    PR generation=0x8, Reservation follows:
-      Key=0x100000000000000
-      scope: LU_SCOPE,  type: Exclusive Access, registrants only
-   ```
+   > **例 7.3 在 /dev/sda 上查询预留**
+   > 
+   > ```
+   > # *sg_persist --read-reservation /dev/sda*
+   > 
+   >  LIO-ORG   block_1           4.0
+   >  Peripheral device type: disk
+   >  PR generation=0x8, Reservation follows:
+   >    Key=0x100000000000000
+   >    scope: LU_SCOPE,  type: Exclusive Access, registrants only
+   > ```
 
 2. 删除服务器上的现有注册：
    
@@ -2074,18 +2075,18 @@ pNFS SCSI 通过预留分配来处理防护。在服务器向客户端发布布�
               path-to-scsi-device
    ```
    
-   **例 7.4 删除 /dev/sda 上的保留**
-   
-   ```
-   # sg_persist --out \
-              --release \
-              --param-rk=0x100000000000000 \
-              --prout-type=6 \
-              /dev/sda
-   
-    LIO-ORG   block_1           4.0
-    Peripheral device type: disk
-   ```
+   > **例 7.4 删除 /dev/sda 上的保留**
+   > 
+   > ```
+   > # sg_persist --out \
+   >            --release \
+   >            --param-rk=0x100000000000000 \
+   >            --prout-type=6 \
+   >            /dev/sda
+   > 
+   >  LIO-ORG   block_1           4.0
+   >  Peripheral device type: disk
+   > ```
 
 # 第 8 章 监控 pNFS SCSI 布局功能
 
@@ -2152,12 +2153,11 @@ pNFS SCSI 通过预留分配来处理防护。在服务器向客户端发布布�
 - `LAYOUT` 统计信息指示客户端和服务器使用 pNFS SCSI 操作的请求。
 - `READ` 和 `WRITE` 统计信息指示客户端和服务器退回到 NFS 操作的请求。
 
-# 9. FS-Cache 入门
+# 9 FS-Cache 入门
 
 FS-Cache 是一个持久的本地缓存，文件系统可以使用它来获取通过网络检索的数据并将其缓存在本地磁盘上。 这有助于最大限度地减少用户从通过网络安装的文件系统（例如 NFS）访问数据的网络流量。
 
-## 9.1  FS-Cache 概述
-
+9.1  FS-Cache 概述
 下图是 FS-Cache 如何工作的高级说明：
 
 **图 9.1 FS 缓存概述**
@@ -2260,10 +2260,10 @@ FS-Cache 不保证提高性能。使用缓存会导致性能损失：例如，�
    ```
 
 9. 要将 cachefilesd 配置为在引导时启动，请以 root 身份执行以下命令：
-   
-   ```
-   # systemctl enable cachefilesd
-   ```
+
+```
+# systemctl enable cachefilesd
+```
 
 ## 9.4 cache cull limits 配置
 
@@ -2466,7 +2466,7 @@ NFS 有一些缓存限制：
 - SMB 3.0
 - SMB 3.1.1
 
-> 注意
+> **注意**
 > 
 > 根据协议版本，并非所有 SMB 功能都已实现。
 
@@ -2500,7 +2500,7 @@ Samba 使用 SMB 协议中的 `CAP_UNIX` 功能位来提供 UNIX 扩展功能。
 
 如果您只需要临时挂载 SMB 共享，则可以使用 `mount` 工具手动挂载它。
 
-> 注意
+> **注意**
 > 
 > 重新启动系统时，手动挂载的共享不会再次自动挂载。要配置 OpenCloud OS 在系统引导时自动挂载共享，请参阅在[系统启动时自动挂载 SMB 共享](#114-系统启动时自动挂载-smb-共享)。
 
@@ -2508,7 +2508,7 @@ Samba 使用 SMB 协议中的 `CAP_UNIX` 功能位来提供 UNIX 扩展功能。
 
 - `cifs-utils` 软件包已安装。
 
-流程
+**流程**
 
 要手动挂载 SMB 共享，请使用带有 `-t cifs` 参数的 `mount` 工具：
 
@@ -2679,3 +2679,492 @@ Password: password
 > **注意**
 > 
 > 多个用户可以同时在挂载的共享上使用他们自己的凭证执行操作。
+
+# 第 13 章 持久性命名属性概述
+
+作为系统管理员，您需要使用持久性命名属性来引用存储卷，以构建在多个系统启动时更可靠的存储设置。
+
+## 13.1 非持久性命名属性的缺点
+
+OpenCloud OS 提供了多种识别存储设备的方法。在使用时务必要使用正确的选项来识别每个设备，以避免无意中访问错误的设备，尤其是在安装到驱动器或重新格式化驱动器时。
+
+传统上，在 Linux 上使用 `/dev/sd(major number)(minor number)` 形式的非持久名称来指代存储设备。当检测到每个设备时，会为其分配主要和次要编号范围以及相关的 `sd` 名称。这意味着如果设备检测的顺序发生变化，主次编号范围之间的关联以及相关的 `sd` 名称可能会发生变化。
+
+在以下情况下可能会发生这种排序更改：
+
+- 系统引导过程的并行化会在每次系统引导时以不同的顺序检测存储设备。
+- 磁盘无法启动或响应 SCSI 控制器。这导致正常设备探测器无法检测到它。系统无法访问该磁盘，并且后续设备将具有其主要和次要编号范围，并且其相关的 `sd` 名称会向下移动。例如，如果未检测到通常称为 `sdb` 的磁盘，则通常称为 `sdc` 的磁盘将改为显示为 `sdb`。
+- SCSI 控制器（主机总线适配器或 HBA）无法初始化，导致无法检测到连接到该 HBA 的所有磁盘。任何连接到随后探测的 HBA 的磁盘都被分配了不同的主要和次要编号范围，以及不同的关联 `sd` 名称。
+- 如果系统中存在不同类型的 HBA，则驱动程序初始化的顺序会发生变化。导致这些 HBA 的磁盘会以不同的顺序被检测到。如果将 HBA 连接到系统上的不同 PCI 插槽时也可能会发生这种情况。
+- 使用光纤通道、iSCSI 或 FCoE 适配器连接到系统的磁盘可能在探测存储设备时无法访问，例如，由于存储阵列或中间交换机断电。如果存储阵列在线所需的时间比系统启动所需的时间长，则系统在电源故障后重新启动时可能会发生这种情况。尽管某些光纤通道驱动程序支持指定持久性 SCSI 目标 ID 到 WWPN 映射的机制，但这不会保留主要和次要编号范围以及相关的 `sd` 名称，它只提供一致的 SCSI 目标 ID 号。
+
+这些原因使得在引用设备(例如在 `/etc/fstab` 文件中的)时不希望使用主要和次要编号范围或相关的 `sd` 名称.可能会挂载错误的设备并导致数据损坏。
+
+然而，即使使用其他机制（例如设备报告错误时），仍然需要引用 `sd` 名称。这是因为 Linux 内核在有关设备的内核消息中使用 `sd` 名称（以及 SCSI 主机/通道/目标/LUN 元组）。
+
+## 13.2 文件系统和设备标识符
+
+本节解释了标识文件系统和块设备的持久属性之间的区别。
+
+**文件系统标识符**
+
+文件系统标识符与在块设备上创建的特定文件系统绑定。标识符也作为文件系统的一部分保存。如果将文件系统复制到不同的设备，它仍然带有相同的文件系统标识符。另一方面，如果您重写设备，例如使用 `mkfs` 工具对其进行格式化，则设备会丢失该属性。
+
+文件系统标识符包括：
+
+- 唯一标识符 (UUID)
+- 标签
+
+**设备标识符**
+
+设备标识符与块设备绑定：例如磁盘或分区。如果您重写设备，例如使用 `mkfs` 工具对其进行格式化，则设备会保留该属性，因为它没有存储在文件系统中。
+
+设备标识符包括：
+
+- 通用标识符 (WWID)
+- 分区 UUID
+- 序列号
+
+**建议**
+
+- 某些文件系统（例如逻辑卷）跨越多个设备。建议使用文件系统标识符而不是设备标识符来访问这些文件系统。
+
+## 13.3 使用 /dev/disk/ 中的 udev 机制管理的设备名称
+
+本节列出了 `udev` 服务在 `/dev/disk/` 目录中提供的不同类型的持久命名属性。
+
+`udev` 机制用于 Linux 中的所有类型的设备，而不仅仅是存储设备。对于存储设备，OpenCloud OS 包含在 `/dev/disk/` 目录中创建符号链接的 `udev` 规则。这使您可以通过以下方式指向存储设备：
+
+- 其内容
+- 唯一标识符
+- 它们的序列号。
+
+尽管 `udev` 命名属性是持久的，因为它们不会在系统重新启动后自行更改，但有些也是可配置的。
+
+### 13.3.1 文件系统标识符
+
+**/dev/disk/by-uuid/ 中的 UUID 属性**
+
+此目录中的条目提供了一个符号链接名称，该名称通过保存在设备上的内容（即数据）中的**唯一标识符** (UUID) 来指向存储设备。例如：
+
+```
+/dev/disk/by-uuid/15cd6646-bff7-4bbd-90a3-b6f232047a84
+```
+
+您可以使用 UUID 使用以下语法来引用 /etc/fstab 文件中的设备：
+
+```
+UUID=15cd6646-bff7-4bbd-90a3-b6f232047a84
+```
+
+您可以在创建文件系统时配置 UUID 属性，也可以稍后更改它。
+
+![uuid](./images/13.3.1-1.png)
+
+**/dev/disk/by-label/ 中的 Label 属性**
+
+此目录中的条目提供了一个符号链接名称，该名称通过保存在设备上的内容（即数据）中的**label**来指向存储设备。
+
+例如：
+
+```
+/dev/disk/by-label/opencloudos-8-5-x86_64-dvd
+```
+
+您可以使用以下语法使用标签来引用 `/etc/fstab` 文件中的设备：
+
+```
+LABEL=opencloudos-8-5-x86_64-dvd
+```
+
+您可以在创建文件系统时配置 Label 属性，也可以稍后更改它。
+
+![label](./images/13.3.1-2.png)
+
+## 13.3.2 设备标识符
+
+**/dev/disk/by-id/ 中的 WWID 属性**
+
+全球标识符 (WWID) 是 SCSI 标准要求所有 SCSI 设备提供的持久的且**独立于系统的标识符**。 保证WWID 标识符对于每个存储设备都是唯一的，并且独立于用于访问设备的路径。标识符是设备的属性，但不存储在设备上的内容（即数据）中。
+
+可以通过发出 SCSI 查询来检索设备标识重要产品数据（第 `0x83` 页）或单元序列号（第 `0x80` 页）来获取此标识符。
+
+OpenCloud OS 自动维护从基于 WWID 的设备名称到该系统上当前 `/dev/sd` 名称的正确映射。应用程序可以使用 `/dev/disk/by-id/` 名称来引用磁盘上的数据，即使设备的路径发生变化，甚至在从不同系统访问设备时也是如此。
+
+> **例 13.1 WWID 映射**
+> 
+> | **WWID 符号链接**                                                         | **非持久设备**   | **备注**             |
+> | --------------------------------------------------------------------- | ----------- | ------------------ |
+> | `/dev/disk/by-id/scsi-3600508b400105e210000900000490000`              | `/dev/sda`  | 具有页面 `0x83` 标识符的设备 |
+> | `/dev/disk/by-id/scsi-SSEAGATE_ST373453LW_3HW1RHM6`                   | `/dev/sdb`  | 具有页面 `0x80` 标识符的设备 |
+> | `/dev/disk/by-id/ata-SAMSUNG_MZNLN256HMHQ-000L7_S2WDNX0J336519-part3` | `/dev/sdc3` | 磁盘分区               |
+
+除了系统提供的这些持久化名称之外，您还可以使用 `udev` 规则来实现持久化名称映射到存储的 WWID 中。
+
+**/dev/disk/by-partuuid 中的分区 UUID 属性**
+
+分区 UUID (PARTUUID) 属性标识 GPT 分区表定义的分区。
+
+> **例 13.2 分区 UUID 映射**
+> 
+> | **PARTUUID 符号链接**                   | **非持久性设备**  |
+> | ----------------------------------- | ----------- |
+> | `/dev/disk/by-partuuid/35e6a7c2-01` | `/dev/sda1` |
+> | `/dev/disk/by-partuuid/35e6a7c2-02` | `/dev/sda2` |
+
+![PARTUUID](./images/13.3.2-1.png)
+
+**/dev/disk/by-path/ 中的 Path 属性**
+
+此属性通过用于访问该设备的**硬件路径**来提供一个指向存储设备的符号链接。
+
+如果硬件路径的任何部分（例如 PCI ID、目标端口或 LUN 号）发生更改，则 Path 属性会失败。因此 Path 属性是不可靠的。但是 Path 属性在以下场景中可能很有用：
+
+- 您需要识别您要替换的磁盘。
+- 您计划在特定位置的磁盘上安装存储服务。
+
+## 13.4 带有 DM 多路径的通用标识符
+
+本节介绍设备映射器多路径配置中通用标识符 (WWID) 和非持久设备名称之间的映射。
+
+如果从系统到设备有多条路径，DM Multipath 使用 WWID 来检测设备。然后 DM Multipath 在 `/dev/mapper/wwid` 目录中显示单个“pseudo-device”，例如 `/dev/mapper/3600508b400105df70000e00000ac0000`。
+
+`multipath -l` 命令显示到非持久性标识符的映射：
+
+- *`Host:Channel:Target:LUN`*
+- `/dev/sd` 名称
+- `major:minor` 号
+
+> **例 13.3 多路径配置中的 WWID 映射**
+> 
+> `multipath -l` 命令的一个输出示例：
+> 
+> ```
+> 3600508b400105df70000e00000ac0000 dm-2 vendor,product
+> [size=20G][features=1 queue_if_no_path][hwhandler=0][rw]
+> \_ round-robin 0 [prio=0][active]
+> \_ 5:0:1:1 sdc 8:32  [active][undef]
+> \_ 6:0:1:1 sdg 8:96  [active][undef]
+> \_ round-robin 0 [prio=0][enabled]
+> \_ 5:0:0:1 sdb 8:16  [active][undef]
+> \_ 6:0:0:1 sdf 8:80  [active][undef]
+> ```
+
+DM Multipath 自动维护每个基于 WWID 的设备名称到系统上相应 `/dev/sd` 名称的正确映射。这些名称在路径更改时保持不变，并且在从不同系统访问设备时保持一致。
+
+当使用 DM Multipath 的 `user_friendly_names` 功能时，WWID 被映射为 `/dev/mapper/mpathN` 形式的名称。默认情况下，此映在文件 `/etc/multipath/bindings` 中维护。只要维护该文件，这些 `mpathN` 名称就一直存在。
+
+> **重要**
+> 
+> 如果您使用 `user_friendly_names`，则需要额外的步骤才能在集群中获得一致的名称。
+
+## 13.5 udev 设备命名规则的限制
+
+以下是 `udev` 命名规则的一些限制：
+
+- 执行查询时可能无法访问设备，因为当 `udev` 处理 `udev` 规则时，`udev` 机制可能依赖于查询存储设备的能力。当设备不在服务器中时，光纤通道、iSCSI 或 FCoE 存储设备更可能发生这种情况。
+- 内核可能随时发送 `udev` ，从而导致规则被处理，并可能导致设备无法访问时，`/dev/disk/by-*/` 链接被删除。
+- 在 `udev` 产生和处理时（如检测到大量设备），用户空间 `udevd` 服务花费一些时间来处理每个事件的规则时，可能会有延迟。这可能会导致内核检测到设备与 `/dev/disk/by-*/` 名称可用之间存在延迟。
+- 规则调用的外部程序（例如 `blkid`）可能会在短时间内打开设备，从而使设备无法用于其他用途。
+- `/dev/disk/` 中 `udev` 机制管理的设备名称可能会在主版本之间发生变化，需要您更新链接。
+
+## 13.6 列出持久命名属性
+
+此过程描述如何找出非持久性存储设备的持久命名属性。
+
+**流程**
+
+- 要列出 UUID 和 Label 属性，请使用 `lsblk` 工具：
+  
+  ```
+  $ lsblk --fs storage-device
+  ```
+  
+  例如：
+  
+  > **例 13.4 查看文件系统的 UUID 和标签**
+  > 
+  > ```
+  > $ lsblk --fs /dev/vda1
+  > 
+  > NAME FSTYPE LABEL UUID                                 MOUNTPOINT
+  > vda1 xfs          15cd6646-bff7-4bbd-90a3-b6f232047a84 /boot
+  > ```
+  
+  ![UUID和Label](./images/13.6-1.png)
+
+- 要列出 PARTUUID 属性，请使用 `lsblk` 工具以及 `--output +PARTUUID` 选项：
+  
+  ```
+  $ lsblk --output +PARTUUID
+  ```
+  
+  例如：
+  
+  > **例 13.5 查看分区的 PARTUUID 属性**
+  > 
+  > ```
+  > $ $ lsblk --output +PARTUUID /dev/sda1
+  > 
+  > NAME MAJ:MIN RM SIZE RO TYPE MOUNTPOINT PARTUUID
+  > vda1 253:1    0   1G  0 part /boot      35e6a7c2-01
+  > ```
+  
+  ![PARTUUID](./images/13.6-2.png)
+
+- 要列出 WWID 属性，请检查 `/dev/disk/by-id/` 目录中符号链接的目标。例如：
+  
+  > **例 13.6 查看系统上所有存储设备的 WWID**
+  > 
+  > ```
+  > $ file /dev/disk/by-id/*
+  > 
+  > /dev/disk/by-id/ata-QEMU_DVD-ROM_bef07694-82b3-402e-b:                                        symbolic link to ../../sr0
+  > /dev/disk/by-id/ata-QEMU_DVD-ROM_QM00002:                                                     symbolic link to ../../sr1
+  > /dev/disk/by-id/dm-name-opencloudos-root:                                                     symbolic link to ../../dm-0
+  > /dev/disk/by-id/dm-name-opencloudos-swap:                                                     symbolic link to ../../dm-1
+  > /dev/disk/by-id/dm-uuid-LVM-vF7qTdo3J0KWKmyBiHI6dCwkf7Z0K8rcbu8oaxySo5oqcytCMTd5Cb3RX2rBt1QH: symbolic link to ../../dm-1
+  > /dev/disk/by-id/dm-uuid-LVM-vF7qTdo3J0KWKmyBiHI6dCwkf7Z0K8rcjTTWKI2DYXGWm6tfwdHIxHzvRUhO38bv: symbolic link to ../../dm-0
+  > /dev/disk/by-id/lvm-pv-uuid-O0JKeK-uPCw-cUa0-KOE5-KfiT-HjIM-3MhRiy:                           symbolic link to ../../vda2
+  > /dev/disk/by-id/virtio-2e46d4c6-b145-4250-8:                                                  symbolic link to ../../vdb
+  > /dev/disk/by-id/virtio-326e8248-eb33-4f06-8:                                                  symbolic link to ../../vda
+  > /dev/disk/by-id/virtio-326e8248-eb33-4f06-8-part1:                                            symbolic link to ../../vda1
+  > /dev/disk/by-id/virtio-326e8248-eb33-4f06-8-part2:                                            symbolic link to ../../vda2
+  > ```
+  
+  ![WWID](./images/13.6-3.png)
+
+## 13.7 修改持久命名属性
+
+此步骤描述如何更改文件系统的 UUID 或 Label persistent naming 属性。
+
+> **注意**
+> 
+> 更改 `udev` 属性发生在后台，可能需要很长时间。 `udevadm set` 命令会等待更改完全注册，这样可以确保您的下一个命令能够正确使用新属性。
+
+在以下命令中：
+
+- 将 *new-uuid* 替换为你要设置的 UUID；例如，`d52531b8-ae6f-443b-9b9a-16cbf1e6a3f4` 。您可以使用 `uuidgen` 命令生成 UUID。
+- 用标签替换 *new-label* ；例如，`backup_data` 。
+
+**前提条件**
+
+- 如果要修改 XFS 文件系统的属性，请先卸载它。
+
+**流程**
+
+- 要更改 **XFS** 文件系统的 UUID 或 Label 属性，请使用 `xfs_admin` 实用程序：
+  
+  ```
+  # xfs_admin -U new-uuid -L new-label storage-device
+  # udevadm settle 
+  ```
+
+- 要更改 **ext4**、**ext3** 或 **ext2** 文件系统的 UUID 或标签属性，请使用 `tune2fs` 实用程序：
+  
+  ```
+  # tune2fs -U new-uuid -L new-label storage-device
+  # udevadm settle
+  ```
+
+- 要更改交换卷的 UUID 或标签属性，请使用 `swaplabel` 实用程序：
+  
+  ```
+  # swaplabel --uuid new-uuid --label new-label swap-device
+  # udevadm settle
+  ```
+
+# 第 14 章 用parted查看分区表
+
+显示块设备的分区表以查看分区布局和有关各个分区的详细信息。您可以使用 `parted` 工具查看块设备上的分区表。
+
+**流程**
+
+1. 启动 `parted` 实用程序。例如，以下输出列出了设备 `/dev/sda`：
+   
+   ```
+   # parted /dev/sda
+   ```
+
+2. 查看分区表：
+   
+   ```
+   (parted) print                                                            
+   Model: Virtio Block Device (virtblk)
+   Disk /dev/vda: 53.7GB
+   Sector size (logical/physical): 512B/512B
+   Partition Table: msdos
+   Disk Flags: 
+   
+   Number  Start   End     Size    Type     File system  Flags
+   1      1049kB  1075MB  1074MB  primary  xfs          boot
+   2      1075MB  53.7GB  52.6GB  primary               lvm
+   ```
+   
+   ![分区表](./images/14-1.png)
+
+3. 可选：切换到您接下来要检查的设备：
+   
+   ```
+   # (parted) select block-device
+   ```
+
+有关打印命令输出的详细说明，请参见以下内容：
+
+**`Virtio Block Device (virtblk)`**
+  磁盘类型、制造商、型号和接口。
+**`Disk /dev/vda: 53.7GB`**
+  块设备的文件路径和存储容量。
+**`Partition Table: msdos`**
+  磁盘标签类型。
+**`Number`**
+  分区号。例如，次要编号为 1 的分区对应于 /dev/vda1。
+**`Start`** 和 **`End`**
+  设备上分区开始和结束的位置。
+**`Type`**
+  有效类型是metadata、free、primary、extended 或 logical
+**`File system`**
+  文件系统类型。如果设备的 `File system` 没有显示任何值，这意味着它的文件系统类型是未知的。 `parted` 工具无法识别加密设备上的文件系统。
+**`Flags`**
+  列出为分区设置的标签。可用的标签是 `boot`、`root`、`swap`、`hidden`、`raid`、`lvm` 或 `lba`。
+
+# 第 15 章 使用parted在磁盘上创建分区表
+
+使用 `parted` 工具可以更轻松地使用分区表格式化块设备。
+
+> **警告**
+> 
+> 使用分区表格式化块设备会删除设备上存储的所有数据。
+
+**流程**
+
+1. 启动交互式 `parted` shell：
+   
+   ```
+   # parted block-device
+   ```
+
+2. 判断设备上是否已经存在分区表：
+   
+   ```
+   # (parted) print
+   ```
+   
+   如果设备已经包含分区，它们将在以下步骤中被删除。
+
+3. 创建新的分区表：
+   
+   ```
+   # (parted) mklabel table-type
+   ```
+   
+   - 将 *table-type* 替换为预期的分区表类型：
+     
+     - 用于 MBR 的 `msdos`
+     - 用于 GPT 的 `gpt`
+   
+   > 例 15.1 创建 GUID 分区表 (GPT) 表
+   > 
+   > 要在磁盘上创建 GPT 表，请使用：
+   > 
+   > ```
+   > # (parted) mklabel gpt
+   > ```
+   
+   输入此命令后，更改开始应用。
+
+4.查看分区表确认是否创建：
+
+```
+# (parted) print
+```
+
+5. 退出 `parted` shell：
+   
+   ```
+   # (parted) quit
+   ```
+
+![创建分区表](./images/15-1.png)
+
+# 第 16 章 使用parted创建分区
+
+作为系统管理员，您可以使用 `parted` 工具在磁盘上创建新分区。
+
+> **注意**
+> 所需的分区是 `swap` 、`/boot/` 和 `/(root)`。
+
+**前提条件**
+
+- 磁盘上的分区表。
+- 如果您要创建的分区大于 2TiB，请使用 **GUID 分区表 (GPT)** 格式化磁盘。
+
+**流程**
+
+1. 启动 parted 工具：
+   
+   ```
+   # parted block-device
+   ```
+
+2. 查看当前分区表是否有足够的可用空间：
+   
+   ```
+   # (parted) print
+   ```
+   
+   - 如果没有足够的可用空间，请调整分区大小。
+   
+   - 从分区表中确定：
+     
+     - 新分区的起点和终点。
+     - 在 MBR 上，它应该是什么分区类型。
+
+3. 创建新分区：
+   
+   ```
+   # (parted) mkpart part-type name fs-type start end
+   ```
+   
+   - 将 *part-type* 替换为 `primary`、`logical` 或 `extended`。这仅适用于 MBR 分区表。
+   - 将 *name* 替换为任意分区名称。这是 GPT 分区表所必需的。
+   - 将 *fs-type* 替换为 `xfs`、`ext2`、`ext3`、`ext4`、`fat16`、`fat32`、`hfs`、`hfs+`、`linux-swap`、`ntfs` 或 `reiserfs`。 *fs-type* 参数是可选的。请注意，`parted` 工具不会在分区上创建文件系统。
+   - 将 `start` 和 `end` 替换为确定分区起点和终点的大小，从磁盘的开头开始计数。您可以使用大小后缀，例如 `512MiB`、`20GiB` 或 `1.5TiB`。默认大小以兆字节为单位。
+   
+   > **例 16.1 创建一个小的主分区**
+   > 
+   > 要在 MBR 表上创建从 1024MiB 到 2048MiB 的主分区，请使用：
+   > 
+   > ```
+   > # (parted) mkpart primary 1024MiB 2048MiB
+   > ```
+   
+   输入命令后更改开始应用。
+
+4. 查看分区表，确认创建的分区在分区表中，分区类型、文件系统类型、大小都正确：
+   
+   ```
+   # (parted) print
+   ```
+
+5. 退出 `parted` shell：
+   
+   ```
+   # (parted) quit
+   ```
+
+6. 注册新的设备节点：
+   
+   ```
+   # udevadm settle
+   ```
+
+7. 验证内核是否识别新分区：
+   
+   ```
+   # cat /proc/partitions
+   ```
+
+![创建新分区-1](./images/16-1.png)
+
+![创建新分区-2](./images/16-2.png)
