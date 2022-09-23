@@ -3489,7 +3489,7 @@ XFS 对于单线程、元数据密集型工作负载的性能相对较低。例�
   # mkfs.xfs block-device
   ```
   
-  - 用块设备的路径替换块设备。例如，`/dev/sdb1`、`/dev/disk/by-uuid/15cd6646-bff7-4bbd-90a3-b6f232047a84` 或 `/dev/my-volgroup/my-lv`。
+  - 用块设备的路径替换块设备。例如：`/dev/sdb1`、`/dev/disk/by-uuid/15cd6646-bff7-4bbd-90a3-b6f232047a84` 或 `/dev/my-volgroup/my-lv`。
   - 通常，默认选项是常见用途的最佳选择。
   - 在包含现有文件系统的块设备上使用 `mkfs.xfs` 时，添加 `-f` 选项以覆盖该文件系统。
 
@@ -3532,7 +3532,7 @@ XFS 对于单线程、元数据密集型工作负载的性能相对较低。例�
 > 
 > Storage 角色只能在未分区的整个磁盘或逻辑卷 (LV) 上创建文件系统。它不能在分区上创建文件系统。
 
-> 例 22.1。在 /dev/sdb 上创建 XFS 的 playbook
+> 例 22.1 在 /dev/sdb 上创建 XFS 的 playbook
 > 
 > ```
 > ---
@@ -3553,3 +3553,1591 @@ XFS 对于单线程、元数据密集型工作负载的性能相对较低。例�
 > - 要在 LV 上创建文件系统，请在 `disks:` 属性下提供 LVM 设置，包括关闭的卷组。
 > 
 > 不要提供 LV 设备的路径。
+
+# 第 23 章 备份 XFS 文件系统
+
+作为系统管理员，您可以使用 `xfsdump` 将 XFS 文件系统备份到文件或磁带上。这提供了一种简单的备份机制。
+
+## 23.1 XFS 备份的特点
+
+本节介绍使用 `xfsdump` 工具备份 XFS 文件系统的主要概念和功能。
+
+您可以使用 `xfsdump` 工具来：
+
+- 对常规文件镜像进行备份。
+  
+   只能将一个备份写入常规文件。
+
+- 在磁带驱动器中进行备份。
+  
+   `xfsdump` 工具还允许您将多个备份写入同一磁带。一个备份可以跨越多个磁带。
+  
+   要将多个文件系统备份到单个磁带设备上，只需将备份写入到包含 XFS 备份的磁带。这会将新备份附加到上一个备份的上面。默认情况下，`xfsdump` 从不覆盖现有备份。
+
+- 创建增量备份。
+  
+   `xfsdump` 工具使用转储级别来确定与其他备份相关的基本备份。从 0 到 9 的数字表示增加的转储级别。增量备份仅备份自上次转储较低级别以来发生更改的文件：
+  
+  - 要执行完整备份，请在文件系统上执行 0 级转储。
+  - 1 级转储是完整备份之后的第一个增量备份。下一个增量备份将是 2 级，它只备份自上次 1 级转储以来发生更改的文件；以此类推，最高到9级。
+
+- 可以使用大小、子树或 inode 标志从备份中排除文件来过滤它们。
+
+## 23.2 使用 xfsdump 备份 XFS 文件系统
+
+此过程描述如何将 XFS 文件系统的内容备份到文件或磁带中。
+
+**前提条件**
+
+- 可以备份的 XFS 文件系统。
+- 可以存储备份的另一个文件系统或磁带驱动器。
+
+**流程**
+
+- 使用以下命令备份 XFS 文件系统：
+  
+  ```
+  # xfsdump -l level [-L label] \
+           -f backup-destination path-to-xfs-filesystem
+  ```
+  
+  - 将 *level* 替换为备份的转储级别。使用 `0` 执行完整备份或使用 `1` 到 `9` 执行后续增量备份。
+  - 将 *backup-destination* 替换为您要存储备份的路径。目标可以是常规文件、磁带驱动器或远程磁带设备。例如，用于文件的 `/backup-files/Data.xfsdump` 或用于磁带驱动器的 `/dev/st0`。
+  - 将 *path-to-xfs-filesystem* 替换为要备份的 XFS 文件系统的挂载点。例如，`/mnt/data/`。必须挂载文件系统。
+  - 备份多个文件系统并将它们保存在单个磁带设备上时，使用 `-L` *`label`* 选项为每个备份添加会话标签，以便在恢复时更容易识别它们。使用备份任何名称替换 *label* ：例如，`backup_data`。
+
+> **例 23.1 备份多个 XFS 文件系统**
+> 
+> - 备份挂载在 `/boot/` 和 `/data/` 目录的 XFS 文件系统的内容并将它们保存为 `/backup-files/` 目录中的文件：
+> 
+> ```
+> # xfsdump -l 0 -f /backup-files/boot.xfsdump /boot
+> # xfsdump -l 0 -f /backup-files/data.xfsdump /data
+> ```
+> 
+> - 要在单个磁带设备上备份多个文件系统，请使用 `-L` *`label`* 选项为每个备份添加一个会话标签：
+> 
+> ```
+> # xfsdump -l 0 -L "backup_boot" -f /dev/st0 /boot
+> # xfsdump -l 0 -L "backup_data" -f /dev/st0 /data
+> ```
+
+![备份文件系统的文件（1）](./images/23-1.png)
+
+![备份文件系统的文件（2）](./images/23-2.png)
+
+# 第 24 章 从备份中恢复 XFS 文件系统
+
+作为系统管理员，您可以使用 `xfsrestore` 工具来恢复使用 `xfsdump` 工具创建并存储在文件或磁带上的 XFS 备份。
+
+## 24.1 从备份恢复 XFS 的功能
+
+本节介绍了使用 `xfsrestore` 工具从备份中恢复 XFS 文件系统的关键概念和功能。
+
+`xfsrestore` 工具从 `xfsdump` 生成的备份中恢复文件系统。 `xfsrestore` 工具有两种模式：
+
+- **简单** 模式使用户能够从 0 级转储中恢复整个文件系统。这是默认模式。
+- **累积** 模式允许从增量备份恢复文件系统：即从级别 1 到级别 9。
+
+唯一的会话 *ID* 或会话 *标签* 标识每个备份。从包含多个备份的磁带恢复备份需要相应的会话 ID 或标签。
+
+要从备份中提取、添加或删除特定文件，请进入 `xfsrestore` 交互模式。交互模式提供一组命令来操作备份文件。
+
+## 24.2 使用 xfsrestore 从备份中恢复 XFS 文件系统
+
+此过程描述如何了从文件或磁带备份恢复 XFS 文件系统的内容。
+
+**前提条件**
+
+- XFS 文件系统的文件或磁带备份，如[备份 XFS 文件系统](#第-23-章-备份-xfs-文件系统)中所述。
+- 您可以在其中恢复备份的存储设备。
+
+**流程**
+
+- 恢复备份的命令会有所不同，具体取决于您是从完整备份还是增量备份中恢复，还是从单个磁带设备恢复多个备份：
+  
+  ```
+  # xfsrestore [-r] [-S session-id] [-L session-label] [-i]
+              -f backup-location restoration-path
+  ```
+  
+  - 将 *backup-location* 替换为备份的位置。这可以是常规文件、磁带驱动器或远程磁带设备。例如: 用于文件的 `/backup-files/Data.xfsdump` 或者用于磁带驱动器的 `/dev/st0` 。
+  
+  - 将 *restore-path* 替换为要还原文件系统的目录的路径。例如: `/mnt/data/`。
+  
+  - 要从增量（1 级到 9 级）备份恢复文件系统，请添加 `-r` 选项。
+  
+  - 要从包含多个备份的磁带设备中恢复备份，请使用 `-S` 或 `-L` 选项指定备份。
+    
+    `-S` 选项允许您按会话 ID 选择备份，而 `-L` 选项允许您按会话标签进行选择。要获取会话 ID 和会话标签，请使用 `xfsrestore -I` 命令。
+    
+    将 *session-id* 替换为备份的会话 ID。例如： `89aa11fb-e4e9-43a2-8790-f84cb3977917`。将 *session-label* 替换为备份的会话标签。例如： `backup_session_label`。
+    
+    ![获取会话 ID 和会话标签](./images/24-2.png)
+  
+  - 要以交互方式使用 `xfsrestore`，请使用 `-i` 选项。
+    
+    交互式对话框在 `xfsrestore` 完成读取指定设备后开始。交互式 `xfsrestore` shell 中可用的命令包括 `cd`、`ls`、`add`、`delete` 和 `extract`；有关命令的完整列表，请使用 `help` 命令。
+
+> **例 24.1 恢复多个 XFS 文件系统**
+> 
+> - 要恢复 XFS 备份文件并将其内容保存到 /mnt/ 下的目录中：
+> 
+> ```
+> # xfsrestore -f /backup-files/boot.xfsdump /mnt/boot/
+> # xfsrestore -f /backup-files/data.xfsdump /mnt/data/
+> ```
+> 
+> - 要从包含多个备份的磁带设备恢复，请通过会话标签或会话 ID 指定每个备份：
+> 
+> ```
+> # xfsrestore -L "backup_boot" -f /dev/st0 /mnt/boot/
+> # xfsrestore -S "45e9af35-efd2-4244-87bc-4762e476cbab" \
+>              -f /dev/st0 /mnt/data/
+> ```
+
+![恢复文件系统](./images/24-2.png)
+
+## 24.3 从磁带恢复 XFS 备份时的说明性消息
+
+从存有多个文件系统备份的磁带中还原备份时，`xfsrestore` 工具可能会发出消息。当 `xfsrestore` 按顺序检查磁带上的每个备份时，这些消息会通知您是否找到了所请求备份的匹配项。例如：
+
+xfsrestore: preparing drive
+xfsrestore: examining media file 0
+xfsrestore: inventory session uuid (8590224e-3c93-469c-a311-fc8f23029b2a) does not match the media header's session uuid (7eda9f86-f1e9-4dfd-b1d4-c50467912408)
+xfsrestore: examining media file 1
+xfsrestore: inventory session uuid (8590224e-3c93-469c-a311-fc8f23029b2a) does not match the media header's session uuid (7eda9f86-f1e9-4dfd-b1d4-c50467912408)
+[...]
+
+说明性消息会一直出现，直到找到匹配的备份。
+
+# 第 25 章 增加 XFS 文件系统的大小
+
+作为系统管理员，您可以增加 XFS 文件系统的大小以利用更大的存储容量。
+
+> **重要**
+> 目前无法减小 XFS 文件系统的大小。
+
+## 25.1 使用 xfs_growfs 增加 XFS 文件系统的大小
+
+此过程描述如何使用 `xfs_growfs` 实用程序扩展 XFS 文件系统。
+
+**前提条件**
+
+- 确保底层块设备具有适当的大小，以便以后保存调整大小的文件系统。对受影响的块设备使用适当的大小调整方法。
+- 挂载 XFS 文件系统。
+
+**流程**
+
+- 挂载 XFS 文件系统后，使用 `xfs_growfs` 工具增加其大小：
+  
+  ```
+  # xfs_growfs file-system -D new-size
+  ```
+  
+  - 将 file-system 替换为 XFS 文件系统的挂载点。
+  
+  - 使用 -D 选项，将 new-size 替换为在文件系统块数中指定的所需文件系统的新大小。
+    
+    要找出给定 XFS 文件系统的块大小（以 kB 为单位），请使用 `xfs_info` 工具：
+    
+    ```
+    # xfs_info /dev/vdb1
+    
+    meta-data=/dev/vdb1              isize=512    agcount=4, agsize=131072 blks
+           =                       sectsz=512   attr=2, projid32bit=1
+           =                       crc=1        finobt=1, sparse=1, rmapbt=0
+           =                       reflink=1
+    data     =                       bsize=4096   blocks=524288, imaxpct=25
+           =                       sunit=0      swidth=0 blks
+    naming   =version 2              bsize=4096   ascii-ci=0, ftype=1
+    log      =internal log           bsize=4096   blocks=2560, version=2
+           =                       sectsz=512   sunit=0 blks, lazy-count=1
+    realtime =none                   extsz=4096   blocks=0, rtextents=0
+    data size 3 too small, old size is 524288
+    ```
+  
+  - 如果没有 `-D` 选项，`xfs_growfs` 会将文件系统增长到底层设备支持的最大大小。
+
+![增加文件系统大小](./images/25-1.png)
+
+![查看文件系统的块大小](./images/25-2.png)
+
+# 第26章 配置XFS错误行为
+
+您可以配置 XFS 文件系统在遇到不同 I/O 错误时的行为。
+
+## 26.1 XFS 中的可配置错误处理
+
+当 I/O 操作期间发生错误时，XFS 文件系统会以下列方式之一进行响应：
+
+- XFS 反复重试 I/O 操作，直到操作成功或 XFS 达到设置的限制。
+  
+   该限制基于最大重试次数或最大重试时间。
+
+- XFS 认为错误是永久性的，并停止对文件系统的操作。
+
+您可以配置 XFS 如何对以下错误情况做出响应：
+
+`EIO`
+
+  读取或写入时出错
+
+`ENOSPC`
+
+  设备上没有剩余空间
+
+`ENODEV`
+
+  找不到设备
+
+您可以设置最大重试次数和 XFS 认为其是永久错误前的最长时间（以秒为单位）。 XFS 在达到任一限制时停止重试操作。
+
+您还可以配置 XFS，以便在卸载文件系统时，XFS 会立即取消重试，而不考虑任何其他配置。此配置使卸载操作能够成功，尽管存在持续错误。
+
+**默认行为**
+
+每个 XFS 错误情况的默认行为取决于错误上下文。某些 XFS 错误（例如 `ENODEV`）被认为是致命且不可恢复的，无论重试多少次。它们的默认重试限制为 0。
+
+## 26.2 特定和未定义 XFS 错误条件的配置文件
+
+以下目录保存用来控制不同错误条件的 XFS 错误行为的配置文件：
+
+`/sys/fs/xfs/device/error/metadata/EIO/`
+
+  对于 `EIO` 错误情况
+
+`/sys/fs/xfs/device/error/metadata/ENODEV`
+
+  对于 `ENODEV` 错误条件
+
+`/sys/fs/xfs/device/error/metadata/ENOSPC/`
+
+  对于 `ENOSPC` 错误条件
+
+`/sys/fs/xfs/device/error/default/`
+
+  所有其他未定义错误条件的通用配置
+
+每个目录包含以下用于配置重试限制的配置文件：
+
+`max_retries`
+
+  控制 XFS 重试操作的最大次数。
+
+`retry_timeout_seconds`
+
+  以秒为单位指定 XFS 停止重试操作的时间限制。
+
+## 26.3 针对特定条件设置 XFS 行为
+
+此过程配置 XFS 如何对特定错误条件作出反应。
+
+**流程**
+
+- 设置最大重试次数、重试时间限制或两者：
+  
+  - 要设置最大重试次数，请将所需次数写入 `max_retries` 文件：
+    
+    ```
+    # echo value > /sys/fs/xfs/device/error/metadata/condition/max_retries
+    ```
+  
+  - 要设置时间限制，请将所需的秒数写入 `retry_timeout_seconds` 文件：
+    
+    ```
+    # echo value > /sys/fs/xfs/device/error/metadata/condition/retry_timeout_second
+    ```
+
+*value* 是介于 -1 和 C 有符号整数类型的最大可能值之间的数字。这是 64 位 Linux 上的 2147483647。
+
+在这两个限制中，值 `-1` 用于连续重试，`0` 用于立即停止。
+
+*device* 是设备的名称，可以在 `/dev/` 目录中找到；例如，`sda`。
+
+## 26.4 为未定义的条件设置 XFS 行为
+
+此流程配置 XFS 如何对共享一个通用配置的所有未定义的错误情况做出响应。
+
+**流程**
+
+- 设置最大重试次数、重试时间限制或两者：
+  
+  - 要设置最大重试次数，请将所需次数写入 `max_retries` 文件：
+    
+    ```
+    # echo value > /sys/fs/xfs/device/error/metadata/condition/max_retries
+    ```
+  
+  - 要设置时间限制，请将所需的秒数写入 `retry_timeout_seconds` 文件：
+    
+    ```
+    # echo value > /sys/fs/xfs/device/error/metadata/condition/retry_timeout_second
+    ```
+
+*value* 是介于 -1 和 C 有符号整数类型的最大可能值之间的数字。这是 64 位 Linux 上的 2147483647。
+
+在这两个限制中，值 `-1` 用于连续重试，`0` 用于立即停止。
+
+*device* 是设备的名称，可以在 `/dev/` 目录中找到；例如，`sda`。。
+
+## 26.5 设置 XFS 卸载行为
+
+此过程配置 XFS 在卸载文件系统时如何对错误条件作出反应。
+
+如果您在文件系统中设置了 `fail_at_unmount` 选项，它会在卸载期间覆盖所有其他错误配置，并立即卸载文件系统而不重试 I/O 操作。这使得卸载操作即使在持续错误的情况下也能成功。
+
+> **警告**
+> 
+> 卸载进程启动后，您无法更改 `fail_at_unmount` 值，因为卸载进程会从 `sysfs` 接口中删除相应文件系统的配置文件。您必须在文件系统开始卸载之前配置卸载行为。
+
+**流程**
+
+- 启用或禁用 `fail_at_unmount` 选项：
+  
+  - 要在文件系统卸载时取消重试所有操作，请启用以下选项：
+    
+    ```
+    # echo 1 > /sys/fs/xfs/device/error/fail_at_unmount
+    ```
+  
+  - 要在文件系统卸载时遵守 `max_retries` 和 `retry_timeout_seconds` 重试限制，请禁用该选项：
+    
+    ```
+    # echo 0 > /sys/fs/xfs/device/error/fail_at_unmount
+    ```
+
+*device* 是设备的名称，可以在 `/dev/` 目录中找到；例如，`sda`。
+
+# 第 27 章 检查和修复文件系统
+
+OpenCloud OS 提供了能够检查和修复文件系统的文件系统管理工具。这些工具通常被称为 `fsck` 工具，其中 `fsck` 是文件系统检查的缩短版本。在大多数情况下，如果需要，这些工具会在系统引导期间自动运行，但也可以在需要时手动调用。
+
+> **重要**
+> 
+> 文件系统检查器仅保证整个文件系统的元数据一致性。它们不知道文件系统中包含的实际数据，也不是数据恢复工具。
+
+## 27.1 需要检查文件系统的场景
+
+如果出现以下任何情况，可以使用相关的 `fsck` 工具检查您的系统：
+
+- 系统无法启动
+- 特定磁盘上的文件损坏
+- 文件系统因不一致而关闭或更改为只读
+- 文件系统上的文件不可访问
+
+文件系统不一致的原因可能有很多种，包括但不限于硬件错误、存储管理错误和软件 bug 。
+
+> **重要**
+> 
+> 文件系统检查工具无法修复硬件问题。如果要成功进行修复，文件系统必须是完全可读、完全可写的。如果文件系统由于硬件错误而损坏，则必须首先将文件系统移动到良好的磁盘上，例如使用 `dd(8)` 工具。
+
+对于日志文件系统，通常在启动时需要的只是在需要时重播日志，这通常是一个非常短的操作。
+
+但是，如果发生文件系统不一致或损坏，即使是日志文件系统，也必须使用文件系统检查程序来修复文件系统。
+
+> 重要
+> 
+> 可以通过将 `/etc/fstab` 中的第6个字段设置为 `0` 来启动时禁用文件系统检查。但是，不建议这样做，除非您在启动时遇到 `fsck` 问题，例如非常大或远程文件系统。
+
+## 27.2 运行 fsck 的潜在副作用
+
+一般来说，运行文件系统检查和修复工具至少可以自动修复它的一些不一致性。在某些情况下，可能会出现以下问题：
+
+- 严重损坏的 inode 或目录如果无法修复，可能会被丢弃。
+- 文件系统可能会发生重大变化。
+
+为确保不会永久进行意外或不需要的更改，请确保您遵循程序中列出的所有预防措施。
+
+## 27.3 XFS 中的错误处理机制
+
+本节介绍 XFS 如何处理文件系统中的各种错误。
+
+**未完全卸载**
+
+日志维护文件系统上发生的元数据更改的事务记录。
+
+在系统崩溃、电源故障或其他未完全卸载事件中，XFS 使用 journal（也称为 log ）来恢复文件系统。内核在挂载 XFS 文件系统时执行日志恢复。
+
+**损坏**
+
+在这种情况下，*损坏*是指由以下原因引起的文件系统错误：
+
+- 硬件故障
+- 存储固件、设备驱动程序、软件堆栈或文件系统本身的错误
+- 导致文件系统的某些部分被文件系统之外的东西覆盖的问题
+
+当 XFS 检测到文件系统或文件系统元数据损坏时，它可能会关闭文件系统并在系统日志中报告该事件。请注意，如果托管 `/var` 目录的文件系统发生损坏，则这些日志在重新启动后将不可用。
+
+> 例 27.1 报告 XFS 损坏的系统日志条目
+> 
+> ```
+> # dmesg --notime | tail -15
+> 
+> XFS (loop0): Mounting V5 Filesystem
+> XFS (loop0): Metadata CRC error detected at xfs_agi_read_verify+0xcb/0xf0 [xfs], xfs_agi block 0x2
+> XFS (loop0): Unmount and run xfs_repair
+> XFS (loop0): First 128 bytes of corrupted metadata buffer:
+> 00000000027b3b56: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+> 000000005f9abc7a: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+> 000000005b0aef35: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+> 00000000da9d2ded: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+> 000000001e265b07: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+> 000000006a40df69: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+> 000000000b272907: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+> 00000000e484aac5: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+> XFS (loop0): metadata I/O error in "xfs_trans_read_buf_map" at daddr 0x2 len 1 error 74
+> XFS (loop0): xfs_imap_lookup: xfs_ialloc_read_agi() returned error -117, agno 0
+> XFS (loop0): Failed to read root inode 0x80, error 11
+> ```
+
+尝试访问损坏的 XFS 文件系统时，用户空间实用程序通常会报告输入/输出错误消息。使用损坏的日志挂载 XFS 文件系统会导致挂载失败，并且会出现以下错误信息：
+
+```
+mount: /mount-point: mount(2) system call failed: Structure needs cleaning.
+```
+
+您必须手动使用 `xfs_repair` 工具来修复损坏。
+
+## 27.4 使用 xfs_repair 检查 XFS 文件系统
+
+此过程使用 `xfs_repair` 工具对 XFS 文件系统执行只读检查。您必须手动使用 `xfs_repair` 工具来修复任何损坏。与其他文件系统修复工具不同，`xfs_repair` 不会在引导时运行，即使 XFS 文件系统没有完全卸载。在未完全卸载的情况下，XFS 只是在挂载时重放日志，确保文件系统一致； `xfs_repair` 不能在不先重新挂载脏日志的情况下修复带有脏日志的 XFS 文件系统。
+
+> **注意**
+> 
+> 尽管 `xfsprogs` 包中存在 `fsck.xfs` 二进制文件，但这只是为了满足在启动时查找 `fsck.file` 系统二进制文件的 `initscripts`。 `fsck.xfs` 立即退出，退出代码为 0。
+
+**流程**
+
+1. 通过挂载和卸载文件系统来重放日志：
+   
+   ```
+   # mount file-system
+   # umount file-system
+   ```
+   
+   > **注意**
+   > 
+   > 如果挂载失败并出现结构需要清理错误，则日志已损坏且无法重播。试运行应该会发现并报告更多的磁盘损坏结果。
+
+2. 使用 xfs_repair 实用程序执行试运行以检查文件系统。在不修改文件系统的情况下，将打印任何错误并指示将要采取的措施。
+   
+   ```
+   # xfs_repair -n block-device
+   ```
+
+3. 挂载文件系统：
+   
+   ```
+   # mount file-system
+   ```
+
+## 27.5 使用 xfs_repair 修复 XFS 文件系统
+
+此过程使用 `xfs_repair` 工具修复损坏的 XFS 文件系统。
+
+**流程**
+
+1. 使用 `xfs_metadump` 工具在修复前为诊断或测试目的创建元数据镜像。如果损坏是由软件 bug 引起的，则预修复文件系统元数据镜像对于支持调查非常有用。修复前镜像中存在的损坏模式有助于分析根本原因。
+   
+   - 使用 `xfs_metadump` 调试工具将元数据从 XFS 文件系统复制到文件。如果需要将大型 `metadump` 文件发送给支持人员，则可以使用标准压缩工具压缩生成的`metadump` 文件以减小文件大小。
+   
+   ```
+   # xfs_metadump block-device metadump-file
+   ```
+
+2. 通过重新挂载文件系统来重放日志：
+   
+   ```
+   # mount file-system
+   # umount file-system
+   ```
+
+3. 使用 `xfs_repair` 工具修复卸载的文件系统：
+   
+   - 如果挂载成功，则不需要其他附加选项：
+   
+   ```
+   # xfs_repair block-device
+   ```
+   
+   - 如果挂载失败并出现 *Structure needs cleaning* 错误，则日志已损坏且无法重播。使用 `-L` 选项（*强制日志归零*）清除日志：
+   
+   > **警告**
+   > 
+   > 此命令会导致崩溃时正在进行的所有元数据更新丢失，这可能会导致严重的文件系统损坏和数据丢失。如果无法重播日志，这应该仅作为最后的手段使用。
+   
+   ```
+   # xfs_repair -L block-device
+   ```
+
+4. 挂载文件系统：
+   
+   ```
+   # mount file-system
+   ```
+
+## 27.6 ext2、ext3 和 ext4 中的错误处理机制
+
+ext2、ext3 和 ext4 文件系统使用 `e2fsck` 工具来执行文件系统检查和修复。文件名 `fsck.ext2`、`fsck.ext3` 和 `fsck.ext4` 是 `e2fsck` 工具的硬链接。这些二进制文件在引导时自动运行，它们的行为会根据被检查的文件系统和文件系统的状态而有所不同。
+
+对不是元数据日志文件系统的 ext2 和没有日志的 ext4 文件系统调用完整的文件系统检查和修复。
+
+对于带有元数据日志的 ext3 和 ext4 文件系统，日志在用户空间中重放并且从实用工具退出。这是默认操作，因为日志重放可确保崩溃后的文件系统一致。
+
+如果这些文件系统在挂载时遇到元数据不一致的情况，它们会将这一事实记录在文件系统超级块中。如果 `e2fsck` 发现文件系统被标记为此类错误，则 `e2fsck` 会在重播日志（如果存在）后执行全面检查。
+
+## 27.7 使用 e2fsck 检查 ext2、ext3 或 ext4 文件系统
+
+此过程使用 `e2fsck` 工具检查 ext2、ext3 或 ext4 文件系统。
+
+**流程**
+
+1. 通过重新挂载文件系统来重放日志：
+   
+   ```
+   # mount file-system
+   # umount file-system
+   ```
+
+2. 执行试运行以检查文件系统。
+   
+   ```
+   # e2fsck -n block-device
+   ```
+
+> **注意**
+> 
+> 打印任何错误并指示将要采取的操作，而不修改文件系统。稍后一致性检查阶段可能会打印额外的错误，因为在修复模式下运行时，它会发现可能在早期阶段已经修复了的不一致问题。。
+
+## 27.8 使用 e2fsck 修复 ext2、ext3 或 ext4 文件系统
+
+此过程使用 `e2fsck` 工具修复损坏的 ext2、ext3 或 ext4 文件系统。
+
+**流程**
+
+1. 保存文件系统镜像以进行支持调查。如果损坏是由软件bug引起的，则预修复文件系统元数据镜像可用于支持调查。修复前图像中存在的损坏模式可以帮助进行根本原因分析。
+   
+   > **注意**
+   > 
+   > 严重损坏的文件系统可能会导致元数据镜像创建出现问题。
+   
+   - 如果您出于测试目的创建镜像，请使用 `-r` 选项创建与文件系统本身大小相同的稀疏文件。然后 `e2fsck` 可以直接对生成的文件进行操作。
+   
+   ```
+   # e2image -r block-device image-file
+   ```
+   
+   - 如果您正在创建用于存档或提供诊断的镜像，请使用 `-Q` 选项，该选项会创建适合传输并且更紧凑的文件格式。
+   
+   ```
+   # e2image -Q block-device image-file
+   ```
+
+2. 通过重新挂载文件系统来重放日志：
+   
+   ```
+   # mount file-system
+   # umount file-system
+   ```
+
+3. 自动修复文件系统。如果需要用户干预，`e2fsck` 会在其输出中指出未修复的问题，并在退出代码中反映此状态。
+   
+   ```
+   # e2fsck -p block-device
+   ```
+
+# 第 28 章 挂载文件系统
+
+作为系统管理员，您可以在系统上挂载文件系统以访问其中的数据。
+
+## 28.1 Linux 挂载机制
+
+本节介绍在 Linux 上挂载文件系统的基本概念。
+
+在 Linux、UNIX 和类似操作系统上，不同分区和可移动设备（例如 CD、DVD 或 USB 闪存）上的文件系统可以附加到目录树中的某个点（挂载点），然后再次分离。当文件系统安装在目录上时，目录的原始内容是不可访问的。
+
+请注意，Linux 不会阻止您将文件系统挂载到已附加文件系统的目录。
+
+挂载时，您可以通过以下方式识别设备：
+
+- 通用唯一标识符 (UUID)：例如,`UUID=34795a28-ca6d-4fd8-a347-73671d0c19cb`
+- 卷标签：例如，`LABEL=home`
+- 非持久块设备的完整路径：例如 `/dev/sda1`
+
+当您使用 mount 命令挂载文件系统时，如果没有提供所有必需的信息（即设备名称、目标目录或文件系统类型），`mount` 工具会读取 `/etc/fstab` 文件的内容以检查是否列出给定的文件系统。 `/etc/fstab` 文件包含设备名称列表、所选文件系统挂载的目录以及文件系统类型和挂载选项。因此，在挂载 `/etc/fstab` 中指定的文件系统时，以下命令语法就足够了：
+
+- 按挂载点挂载：
+  
+  ```
+  # mount directory
+  ```
+
+- 通过块设备挂载：
+  
+  ```
+  # mount device
+  ```
+
+## 28.2 列出当前挂载的文件系统
+
+此过程描述如何在命令行上列出所有当前挂载的文件系统。
+
+**流程**
+
+- 要列出所有已挂载的文件系统，请使用 `findmnt` 实用程序：
+  
+  ```
+  $ findmnt
+  ```
+
+- 要将列出的文件系统限制为特定的文件系统类型，请添加 `--types` 选项：
+  
+  ```
+  $ findmnt --types fs-type
+  ```
+
+例如：
+
+> **例 28.1 仅列出 XFS 文件系统**
+> 
+> ```
+> $ findmnt --types xfs
+> 
+> TARGET  SOURCE                       FSTYPE OPTIONS
+> /       /dev/mapper/opencloudos-root xfs    rw,relatime,attr2,inode64,logbufs=8,logbsize=32k,noquota
+> --/boot /dev/vda1                    xfs    rw,relatime,attr2,inode64,logbufs=8,logbsize=32k,noquota
+> ```
+
+![例出xfs文件系统](./images/28-1.png)
+
+## 28.3 使用 mount 挂载文件系统
+
+此过程描述如何使用 `mount` 实用程序挂载文件系统。
+
+**前提条件**
+
+- 确保您选择的挂载点上尚未挂载任何文件系统：
+  
+  ```
+  $ findmnt mount-point
+  ```
+
+**流程**
+
+1. 要附加某个文件系统，请使用 `mount` 实用程序：
+   
+   ```
+   # mount device mount-point
+   ```
+   
+   > **例 28.2 挂载 XFS 文件系统**
+   > 
+   > 例如，要挂载由 UUID 标识的本地 XFS 文件系统：
+   > 
+   > ```
+   > # mount UUID=ea74bbec-536d-490c-b8d9-5b40bbd7545b /mnt/data
+   > ```
+
+2. 如果 `mount` 无法自动识别文件系统类型，请使用 `--types` 选项指定它：
+   
+   ```
+   # mount --types type device mount-point
+   ```
+   
+   > **例 28.3 挂载 NFS 文件系统**
+   > 
+   > 例如，要挂载远程 NFS 文件系统：
+   > 
+   > ```
+   > # mount --types nfs4 host：/remote-export /mnt/nfs
+   > ```
+
+## 28.4 移动挂载点
+
+此过程描述如何将已挂载的文件系统的挂载点更改到不同的目录。
+
+**流程**
+
+1. 要更改挂载文件系统的目录：
+   
+   ```
+   # mount --move old-directory new-directory
+   ```
+   
+   > **例 28.4 移动主文件系统**
+   > 
+   > 例如，要将挂载在 `/mnt/userdirs/` 目录中的文件系统移动到 `/home/user` 挂载点：
+   > 
+   > ```
+   > # mount --move /mnt/userdirs /home/user
+   > ```
+
+2. 验证文件系统是否已按预期移动：
+   
+   ```
+   $ findmnt
+   $ ls old-directory
+   $ ls new-directory
+   ```
+
+## 28.5 使用 umount 卸载文件系统
+
+此过程描述如何使用 `umount` 实用程序卸载文件系统。
+
+**流程**
+
+1. 使用以下任一命令卸载文件系统：
+   
+   - 通过挂载点：
+   
+   ```
+   # umount mount-point
+   ```
+   
+   - 通过设备：
+   
+   ```
+   # umount mount-point
+   ```
+
+如果命令失败并出现类似以下的错误，则表示文件系统正在使用中，因为某个进程正在使用其上的资源：
+
+```
+umount: /run/media/user/FlashDrive: target is busy.
+```
+
+2. 如果文件系统正在使用中，请使用 `fuser` 工具来确定哪些进程正在访问它。例如：
+   
+   ```
+   $ fuser --mount /run/user/0
+   
+   /run/user/0:          1625  2542m  2568  2683m  2798  2807m  2898m  2899m  2962m  3050m  3257m  3296m  3556m  3569m  3573m  3577m  3585m  3588m  3596m  3614m  3627m  3628m  3629m  3630m  3635m  3638m  3642  3707m  3725m  3801m  3834m  3837m  3851m  3856m  7364m
+   ```
+   
+   ![查看进程](./images/28-2.png)
+
+之后，使用文件系统终止进程并再次尝试卸载它。
+
+## 28.6 常见的安装选项
+
+本节列出了 `mount` 实用程序的一些常用选项。
+
+您可以按以下语法使用这些选项：
+
+```
+# mount --options option1,option2,option
+```
+
+**表 28.1 常用挂载选项**
+
+| **选项**     | **描述**                                         |
+| ---------- | ---------------------------------------------- |
+| `async`    | 对文件系统启用异步输入和输出操作。                              |
+| `auto`     | 使用 `mount -a` 命令使文件系统被自动挂载。                    |
+| `defaults` | 为 `async,auto,dev,exec,nouser,rw,suid` 选项提供别名。 |
+| `exec`     | 允许在特定文件系统中执行二进制文件。                             |
+| `loop`     | 将镜像挂载为 loop 设备。                                |
+| `noauto`   | 默认行为禁用使用 mount -a 命令对文件系统进行自动挂载。               |
+| `noexec`   | 不允许在特定文件系统中执行二进制文件。                            |
+| `nouser`   | 不允许普通用户（即 root 用户）挂载和卸载文件系统。                   |
+| `remount`  | 如果已经挂载文件系统，则会重新挂载文件系统。                         |
+| `ro`       | 仅挂载文件系统以读取。                                    |
+| `rw`       | 挂载文件系统以进行读和写操作。                                |
+| `user`     | 允许普通用户（即 root 用户）挂载和卸载该文件系统。                   |
+
+# 第 29 章 在多个挂载点上共享一个挂载
+
+作为系统管理员，您可以复制挂载点以使文件系统可以从多个目录访问。
+
+## 29.1 共享挂载类型
+
+您可以使用多种类型的共享挂载。当您在共享挂载点挂载另一个文件系统时，这两种文件系统之间的区别就是这种情况。共享挂载是使用共享子树功能实现的。
+
+提供以下挂载类型：
+
+**`private`**
+
+此类型不接收或转发任何传播事件。
+
+当您在复制挂载点或原始挂载点下挂载另一个文件系统时，它不会反映在另一个文件系统上。
+
+**`shared`**
+
+此类型会为给定挂载点创建准确的副本。
+
+当挂载点被标记为 `shared` 挂载时，原始挂载点内的任何挂载都会反映在其中，反之亦然。
+
+这是根文件系统的默认挂载类型。
+
+**`slave`**
+
+此类型创建给定挂载点的有限副本。
+
+当挂载点被标记为 `slave` 挂载时，原始挂载点内的任何挂载都会反映在其中，但 `slave` 挂载中的任何挂载不会反映在其原始挂载中。
+
+**`unbindable`**
+
+这种类型可以防止给定的挂载点被复制。
+
+## 29.2 创建私有挂载点副本
+
+此过程将挂载点复制为私有挂载。您稍后挂载在副本或原始安装点下的文件系统不会反映在另一个中。
+
+**流程**
+
+1. 从原始挂载点创建一个虚拟文件系统 (VFS) 节点：
+   
+   ```
+   # mount --bind original-dir original-dir
+   ```
+
+2. 将原始挂载点标记为私有：
+   
+   ```
+   # mount --make-private original-dir
+   ```
+   
+   或者，要更改选定挂载点及其下所有挂载点的挂载类型，请使用 `--make-rprivate` 选项而不是 `--make-private`。
+
+3. 创建副本：
+   
+   ```
+   # mount --bind original-dir duplicate-dir
+   ```
+
+> **例 29.1 将 /media 复制到 /mnt 作为私有挂载点**
+> 
+> 1. 从 `/media` 目录创建 VFS 节点：
+>    
+>    ```
+>    # mount --bind /media /media
+>    ```
+> 
+> 2. 将 `/media` 目录标记为私有：
+>    
+>    ```
+>    # mount --make-private /media
+>    ```
+> 
+> 3. 在 `/mnt` 中创建其副本：
+>    
+>    ```
+>    # mount --bind /media /mnt
+>    ```
+> 
+> 4. 现在可以验证 `/media` 和 `/mnt` 共享内容，但 `/media` 中的任何挂载都没有出现在 `/mnt` 中。例如，如果 CD-ROM 驱动器包含非空介质并且 `/media/cdrom/` 目录存在，请使用：
+>    
+>    ```
+>    # mount /dev/cdrom /media/cdrom
+>    # ls /media/cdrom
+>    AppStream  BaseOS  EFI  images  isolinux  media.repo  TRANS.TBL
+>    # ls /mnt/cdrom
+>    #
+>    ```
+> 
+> 5. 也可以验证挂载在 `/mnt` 目录中的文件系统没有反映在 `/media` 中。例如，如果插入了使用 `/dev/sdc` 设备的非空 USB 闪存驱动器并且存在 `/mnt/flashdisk/` 目录，请使用：
+>    
+>    ```
+>    # mount /dev/sdc /mnt/flashdisk
+>    # ls /media/flashdisk
+>    # ls /mnt/flashdisk
+>    en-US publican.cfg
+>    ```
+
+![创建私有挂载点副本](./images/29-1.png)
+
+## 29.3 创建共享挂载点副本
+
+此过程将安装点复制为共享安装。您稍后在原始目录或副本下挂载的文件系统始终反映在另一个目录中。
+
+**流程**
+
+1. 从原始挂载点创建一个虚拟文件系统 (VFS) 节点：
+   
+   ```
+   # mount --bind original-dir original-dir
+   ```
+
+2. 将原始挂载点标记为共享：
+   
+   ```
+   # mount --make-shared original-dir
+   ```
+   
+   或者，要更改选定挂载点及其下所有挂载点的挂载类型，请使用 `--make-rshared` 选项而不是 `--make-shared`。
+
+3. 创建副本：
+   
+   ```
+   # mount --bind original-dir duplicate-dir
+   ```
+
+> **例 29.2 将 /media 复制到 /mnt 作为共享挂载点**
+> 
+> 要使 `/media` 和 `/mnt` 目录共享相同的内容：
+> 
+> 1. 从 `/media` 目录创建 VFS 节点：
+>    
+>    ```
+>    # mount --bind /media /media
+>    ```
+> 
+> 2. 将 `/media` 目录标记为共享：
+>    
+>    ```
+>    # mount --make-shared /media
+>    ```
+> 
+> 3. 在 `/mnt` 中创建其副本：
+>    
+>    ```
+>    # mount --bind /media /mnt
+>    ```
+> 
+> 4. 现在可以验证 `/media` 中的挂载是否也出现在 `/mnt` 中。例如，如果 CD-ROM 驱动器包含非空介质并且 `/media/cdrom` 目录存在，请使用：
+>    
+>    ```
+>    # mount /dev/cdrom /media/cdrom
+>    # ls /media/cdrom
+>    AppStream  BaseOS  EFI  images  isolinux  media.repo  TRANS.TBL
+>    # ls /mnt/cdrom
+>    AppStream  BaseOS  EFI  images  isolinux  media.repo  TRANS.TBL
+>    ```
+> 
+> 5. 同样，可以验证挂载在 `/mnt` 目录中的任何文件系统是否反映在 `/media` 中。例如，如果插入了使用 `/dev/sdc1` 设备的非空 USB 闪存并且存在 `/mnt/flashdisk/` 目录，请使用：
+>    
+>    ```
+>    # mount /dev/sdc1 /mnt/flashdisk
+>    # ls /media/flashdisk
+>    en-US  publican.cfg
+>    # ls /mnt/flashdisk
+>    en-US  publican.cfg
+>    ```
+
+![创建共享挂载点副本](./images/29-2.png)
+
+## 29.4 创建从属挂载点副本
+
+此过程将安装点复制为从属安装类型。您稍后在原始挂载点下挂载的文件系统会反映在副本中，但反之则不会。
+
+**流程**
+
+1. 从原始挂载点创建一个虚拟文件系统 (VFS) 节点：
+   
+   ```
+   # mount --bind original-dir original-dir
+   ```
+
+2. 将原始挂载点标记为共享：
+   
+   ```
+   # mount --make-shared original-dir
+   ```
+   
+   或者，要更改选定挂载点及其下所有挂载点的挂载类型，请使用 `--make-rshared` 选项而不是 `--make-shared`。
+
+3. 创建副本，并将其标记为 `slave` 类型：
+   
+   ```
+   # mount --bind original-dir duplicate-dir
+   # mount --make-slave duplicate-dir
+   ```
+
+> **例 29.3 将 /media 复制到 /mnt 作为从属挂载点**
+> 
+> 此示例说明如何使 `/media` 目录的内容也出现在 `/mnt` 中，但 `/mnt` 目录中没有任何挂载以反映在 `/media` 中。
+> 
+> 1. 从 `/media` 目录创建 VFS 节点：
+>    
+>    ```
+>    # mount --bind /media /media
+>    ```
+> 
+> 2. 将 `/media` 目录标记为共享：
+>    
+>    ```
+>    # mount --make-shared /media
+>    ```
+> 
+> 3. 在 `/mnt` 中创建其副本，并将其标记为 `slave` ：
+>    
+>    ```
+>    # mount --bind /media /mnt
+>    # mount --make-slave /mnt
+>    ```
+> 
+> 4. 现在可以验证 `/media` 中的挂载是否也出现在 `/mnt` 中。例如，如果 CD-ROM 驱动器包含非空介质并且 `/media/cdrom` 目录存在，请使用：
+>    
+>    ```
+>    # mount /dev/cdrom /media/cdrom
+>    # ls /media/cdrom
+>    AppStream  BaseOS  EFI  images  isolinux  media.repo  TRANS.TBL
+>    # ls /mnt/cdrom
+>    AppStream  BaseOS  EFI  images  isolinux  media.repo  TRANS.TBL
+>    ```
+> 
+> 5. 同样，可以验证挂载在 `/mnt` 目录中的任何文件系统是否反映在 `/media` 中。例如，如果插入了使用 `/dev/sdc` 设备的非空 USB 闪存并且存在 `/mnt/flashdisk/` 目录，请使用：
+>    
+>    ```
+>    # mount /dev/sdc1 /mnt/flashdisk
+>    # ls /media/flashdisk
+>    en-US  publican.cfg
+>    # ls /mnt/flashdisk
+>    en-US  publican.cfg
+>    ```
+
+![创建从属挂载点副本](./images/29-3.png)
+
+## 29.5 防止挂载点被复制
+
+此过程将挂载点标记为不可绑定，因此无法将其复制到另一个挂载点。
+
+**流程**
+
+- 要将挂载点的类型更改为不可绑定的挂载，请使用：
+  
+  ```
+  # mount --bind mount-point mount-point
+  # mount --make-unbindable mount-point
+  ```
+  
+   或者，要更改所选挂载点及其下所有挂载点的挂载类型，请使用 `--make-runbindable` 选项而不是 `--make-unbindable`。
+  
+   任何后续复制此挂载的尝试都会失败，并出现以下错误：
+  
+  ```
+  #  mount --bind mount-point duplicate-dir
+  
+  mount: wrong fs type, bad option, bad superblock on mount-point,
+  missing codepage or helper program, or other error
+  In some cases useful info is found in syslog - try
+  dmesg | tail  or so
+  ```
+  
+  > **例 29.4 防止 /media 被复制**
+  > 
+  > - 要防止 `/media` 目录被共享，请使用：
+  >   
+  >   ```
+  >   # mount --bind /media /media
+  >   # mount --make-unbindable /media
+  >   ```
+
+# 第 30 章 永久挂载文件系统
+
+作为系统管理员，您可以永久挂载文件系统以配置不可移动存储。
+
+## 30.1 /etc/fstab 文件
+
+本节介绍 /etc/fstab 配置文件，它控制文件系统的永久挂载点。使用 `/etc/fstab` 是永久挂载文件系统的推荐方法。
+
+`/etc/fstab` 文件中的每一行都定义了一个文件系统的挂载点。它包括由空格分隔的六个字段：
+
+1. 由持久属性或 `/dev` 目录的路径标识的块设备。
+2. 将挂载设备的目录。
+3. 设备上的文件系统。
+4. 文件系统的挂载选项。选项 `defaults` 表示分区在启动时使用默认选项挂载。本节还识别 `x-systemd.option` 格式的 `systemd` 挂载单元选项。
+5. `dump` 工具的备份选项。
+6. `fsck` 工具的检查顺序。
+
+> **例 30.1 `/etc/fstab` 中的 `/boot` 文件系统**
+> 
+> | **块设备**                                     | **挂载点** | **文件系统** | **选项**     | **备份** | **检查** |
+> | ------------------------------------------- | ------- | -------- | ---------- | ------ | ------ |
+> | `UUID=15cd6646-bff7-4bbd-90a3-b6f232047a84` | `/boot` | `xfs`    | `defaults` | `0`    | `0`    |
+
+![查看/etc/fstab中的文件系统](./images/30-1.png)
+
+`systemd` 服务从 `/etc/fstab` 中的条目自动生成挂载单元。
+
+## 30.2 将文件系统添加到 /etc/fstab
+
+此过程描述了如何在 `/etc/fstab` 配置文件中为文件系统配置永久挂载点。
+
+**流程**
+
+1. 找出文件系统的 UUID 属性：
+   
+   ```
+   $ lsblk --fs storage-device
+   ```
+   
+   例如：
+   
+   > **例 30.2 查看分区的 UUID**
+   > 
+   > $ lsblk --fs /dev/vda1
+   > 
+   > NAME FSTYPE LABEL UUID                                 MOUNTPOINT
+   > vda1 xfs          15cd6646-bff7-4bbd-90a3-b6f232047a84 /boot
+
+![查看分区的 uuid ](./images/30-2.png)
+
+2. 如果挂载点目录不存在，则创建它：
+   
+   ```
+   # mkdir --parents mount-point
+   ```
+
+3. 以 root 身份编辑 `/etc/fstab` 文件并为文件系统添加一行，由 UUID 标识。
+   
+   例如：
+   
+   > **例 30.3 /etc/fstab 中的 /boot 挂载点**
+   > 
+   > ```
+   > UUID=15cd6646-bff7-4bbd-90a3-b6f232047a84 /boot xfs defaults 0 0
+   > ```
+
+4. 重新生成安装单元，以便您的系统注册新配置：
+   
+   ```
+   # systemctl daemon-reload
+   ```
+
+5. 尝试挂载文件系统以验证配置是否有效：
+   
+   ```
+   # mount mount-point
+   ```
+
+# 31 使用 RHEL 系统角色持久挂载文件系统
+
+本节介绍如何使用 `storage` 角色持久挂载文件系统。
+
+**前提条件**
+
+- 存在使用 `storage` 角色的 Ansible playbook。
+
+## 31.1 持久挂载文件系统的示例 Ansible playbook
+
+本节提供了一个示例 Ansible 剧本。本手册应用 Storage 角色来立即且持久地挂载 XFS 文件系统。
+
+> **例 31.1 将 /dev/sdb 上的文件系统挂载到 /mnt/data 的剧本**
+> 
+> ```
+> ---
+> - hosts: all
+>   vars:
+>     storage_volumes:
+>       - name: barefs
+>         type: disk
+>         disks:
+>           - vdb
+>         fs_type: xfs
+>         mount_point: /mnt/data
+>   roles:
+>     - rhel-system-roles.storage
+> ```
+
+- 此 playbook 将文件系统添加到 `/etc/fstab` 文件中，并立即挂载文件系统。
+- 如果 `/dev/sdb` 设备上的文件系统或挂载点目录不存在，则 playbook 会创建它们。
+
+# 第 32 章 按需挂载文件系统
+
+作为系统管理员，您可以将NFS等文件系统配置为按需自动挂载。
+
+## 32.1 autofs 服务
+
+本节介绍 `autofs` 服务的优点和基本概念，用于按需挂载文件系统。
+
+使用 `/etc/fstab` 配置进行永久挂载的一个缺点是，无论用户访问挂载文件系统的频率如何，系统都必须使用资源来保持挂载文件系统就位。例如，当系统同时将 NFS 挂载到多个系统时，这可能会影响系统性能。
+
+`/etc/fstab` 的替代方法是使用基于内核的 `autofs` 服务。它由以下组件组成：
+
+- 实现文件系统的内核模块
+- 执行所有其他功能的用户空间服务。
+
+`autofs` 服务可以根据需求自动挂载和卸载文件系统，从而节省系统资源。可用于挂载NFS、AFS、SMBFS、CIFS、本地文件系统等文件系统。
+
+## 32.2 autofs 配置文件
+
+本节介绍 `autofs` 服务使用的配置文件的用法和语法。
+
+**主映射文件**
+
+`autofs` 服务使用 `/etc/auto.master`（主映射）作为其默认的主配置文件。这可以通过使用 `/etc/autofs.conf` 配置文件中的 `autofs` 配置以及名称服务切换 (NSS) 机制来更改为使用另一个受支持的网络源和名称。
+
+必须在主映射中配置所有 on-demand 挂载点。挂载点、主机名、导出目录和选项都可以在一组文件（或其他支持的网络源）中指定，而不是为每个主机手动配置它们。
+
+主映射文件列出了由 `autofs` 控制的挂载点，以及它们对应的配置文件或被称为自动挂载映射的网络源。master 映射格式如下：
+
+```
+mount-point  map-name  options
+```
+
+此格式中使用的变量是：
+
+***mount-point***
+
+  `autofs` 挂载点；例如，`/mnt/data` 。
+
+***map-file***
+
+  映射源文件，其中包含挂载点列表和应挂载这些挂载点的文件系统位置。
+
+***options***
+
+  如果提供，这些将应用于给定映射中的所有条目（如果它们本身没有指定选项）。
+
+> **例 32.1 /etc/auto.master 文件**
+> 
+> 以下是 `/etc/auto.master` 文件中的示例行：
+> 
+> /mnt/data  /etc/auto.data
+
+![/etc/auto.master](./images/32-1.png)
+
+**映射文件**
+
+映射文件配置各个 on-demand 挂载点的属性。
+
+如果目录不存在，自动挂载程序会创建这些目录。如果目录在自动挂载程序启动之前就存在，则自动挂载程序在退出时不会删除它们。如果指定了超时，则如果在超时期限内未访问目录，则会自动卸载该目录。
+
+映射的一般格式类似于主映射。但是，options 字段出现在挂载点和位置之间，而不是在 master 映射那样的条目末尾：
+
+```
+mount-point  options  location
+```
+
+此格式中使用的变量是：
+
+***mount-point***
+
+这是指 `autofs` 挂载点。这可以是间接挂载的单个目录名称，也可以是直接挂载的挂载点的完整路径。每个直接和间接映射条目键（挂载点）后面可以跟一个空格分隔的偏移目录列表（每个以 `/` 开头的子目录名称），这就是所谓的多挂载条目。
+
+***options***
+
+提供时，这些选项将附加到主映射条目选项（如果有），或者如果配置条目 `append_options` 设置为 `no`，则使用这些选项代替主映射选项。
+
+***location***
+
+这指的是文件系统位置，例如本地文件系统路径（对于以 `/` 开头的映射名称，前面带有 Sun 映射格式转义字符 `：`）、NFS 文件系统或其他有效的文件系统位置。
+
+> **例 32.2 映射文件**
+> 
+> 以下是映射文件（例如 `/etc/auto.misc` ）中的一个示例：
+> 
+> ```
+> payroll  -fstype=nfs4  personnel:/exports/payroll
+> sales    -fstype=xfs   :/dev/hda4
+> ```
+> 
+> 映射文件中的第一列表示 `autofs` 挂载点：来自名为 `personnel` 的服务器的 `sales` 和 `payroll` 。第二列表示 `autofs` 挂载的选项。第三列表示挂载的来源。
+> 
+> 按照给定的配置，`autofs` 挂载点将是 `/home/payroll` 和 `/home/sales`。 `-fstype=` 选项通常被省略并且如果文件系统是 NFS 则不需要，如果系统默认 NFSv4 为 NFS 挂载，则包括 NFSv4 的挂载。
+> 
+> 使用给定的配置，如果进程需要访问 `autofs` 未挂载的目录，例如 `/home/payroll/2006/July.sxc`，那么 `autofs` 服务会自动挂载该目录。
+
+**amd 映射格式**
+
+`autofs` 服务也可以识别 `amd` 格式的映射配置。如果您想重复使用为 `am-utils` 服务编写的现有的自动挂载程序配置（该服务已删除），这将非常有用。
+
+但是，这里建议使用前面章节中描述的更简单的 `autofs` 格式。
+
+## 32.3 配置 autofs 挂载点
+
+此过程描述如何使用 `autofs` 服务配置按需挂载点。
+
+**前提条件**
+
+- 安装 `autofs` 包：
+
+```
+# yum install autofs
+```
+
+- 启动并启用 `autofs` 服务：
+
+```
+# systemctl enable --now autofs
+```
+
+**流程**
+
+1. 为位于 `/etc/auto.identifier` 的按需挂载点创建一个映射文件。将 *identifier* 替换为标识安装点的名称。
+
+2. 在映射文件中，按照 [autofs 配置文件](#322-autofs-配置文件)部分中的说明填写挂载点、选项和位置字段。
+
+3. 在主映射文件中注册映射文件，如 [autofs 配置文件](#322-autofs-配置文件)部分所述。
+
+4. 允许服务重新读取配置，这样它就可以管理新配置的 `autofs` 挂载：
+   
+   ```
+   # systemctl reload autofs.service
+   ```
+
+5. 尝试访问按需目录中的内容：
+   
+   ```
+   # ls automounted-directory
+   ```
+
+## 32.4 使用 autofs 服务自动挂载 NFS 服务器用户主目录
+
+此过程描述如何配置 autofs 服务以自动挂载用户主目录。
+
+**前提条件**
+
+- **autofs** 软件包已安装。
+- **autofs** 服务已启用并正在运行。
+
+**流程**
+
+1. 通过在需要挂载用户主目录的服务器上编辑 `/etc/auto.master` 文件来指定映射文件的挂载点和位置。为此，将以下行添加到 `/etc/auto.master` 文件中：
+   
+   ```
+   /home /etc/auto.home
+   ```
+
+2. 在需要挂载用户主目录的服务器上创建名为 `/etc/auto.home` 的映射文件，并使用以下参数编辑该文件：
+   
+   ```
+   * -fstype=nfs,rw,sync host.example.com:/home/&
+   ```
+   
+   您可以跳过 *`fstype`* 参数，因为它默认为 *`nfs`*。有关详细信息，请参阅 `autofs(5)` 手册页。
+
+3. 重新加载 `autofs` 服务：
+   
+   ```
+   # systemctl reload autofs
+   ```
+
+## 32.5 覆盖或扩充 autofs 站点配置文件
+
+有时覆盖客户端系统上特定挂载点的站点默认值很有用。
+
+> **例 32.3 初始条件**
+> 
+> 例如，考虑以下条件：
+> 
+> - Automounter 映射存储在 NIS 中，`/etc/nsswitch.conf` 文件具有以下指令：
+>   
+>   ```
+>   automount:    files nis
+>   ```
+> 
+> - `auto.master` 文件包含：
+>   
+>   ```
+>   +auto.master
+>   ```
+> 
+> - NIS `auto.master` 映射文件包含：
+>   
+>   ```
+>   /home auto.home
+>   ```
+> 
+> - NIS `auto.home` 地图包含：
+>   
+>   ```
+>   beth    fileserver.example.com:/export/home/beth
+>   joe     fileserver.example.com:/export/home/joe
+>   *       fileserver.example.com:/export/home/&
+>   ```
+> 
+> - `autofs` 配置选项 `BROWSE_MODE` 设置为 `yes`：
+>   
+>   ```
+>   BROWSE_MODE="yes"
+>   ```
+
+- 文件映射 `/etc/auto.home` 不存在。
+
+**流程**
+
+本节描述从不同服务器挂载主目录和仅使用选定条目扩充 `auto.home` 的示例。
+
+> **例 32.4 从不同的服务器挂载主目录**
+> 
+> 根据上述条件，假设客户端系统需要覆盖 NIS 映射 `auto.home` 并从不同的服务器挂载主目录。
+> 
+> - 在这种情况下，客户端需要使用以下 `/etc/auto.master` 映射：
+>   
+>   ```
+>   /home ­/etc/auto.home
+>   +auto.master
+>   ```
+> 
+> - /etc/auto.home 映射包含以下条目：
+>   
+>   ```
+>   *    host.example.com:/export/home/&
+>   ```
+> 
+> 因为自动挂载程序只处理第一次出现的挂载点，所以 `/home` 目录包含 `/etc/auto.home` 的内容，而不是 NIS `auto.home` 映射。
+
+> **例 32.5 仅使用选定条目增强 auto.home**
+> 
+> 或者，用几个条目来扩充站点范围的 `auto.home` 地图：
+> 
+> 1. 创建一个 `/etc/auto.home` 文件映射，并在其中放入新条目。最后，包括 NIS `auto.home` 映射。然后 `/etc/auto.home` 文件映射类似于：
+>    
+>    ```
+>    mydir someserver:/export/mydir
+>    +auto.home
+>    ```
+> 
+> 2. 使用这些 NIS `auto.home` 映射条件，列出 `/home` 目录输出的内容：
+>    
+>    ```
+>    $ ls /home
+>    
+>    beth joe mydir
+>    ```
+> 
+> 最后一个示例按预期工作，因为 `autofs` 不包含与其正在读取的文件同名的文件映射的内容。因此，`autofs` 将移至 `nsswitch` 配置中的下一个映射源。
+
+## 32.6 使用 LDAP 存储自动挂载映射
+
+此过程将 `autofs` 配置为将自动挂载程序映射存储在 LDAP 配置中，而不是存储在 `autofs` 映射文件中。
+
+**前提条件**
+
+- 必须在所有配置的系统中安装 LDAP 客户端程序库，以便从 LDAP 检索自动挂载器映射。在 OpenCloud OS 上，`openldap` 软件包应该作为 `autofs` 软件包的依赖项自动安装。
+
+**流程**
+
+1. 要配置 LDAP 访问，请修改 `/etc/openldap/ldap.conf` 文件。确保为您的站点正确设置了 `BASE`、`URI` 和 `schema` 选项。
+2. `rfc2307bis` 草案描述了最近建立的用于在 LDAP 中存储自动挂载映射的模式。要使用此模式，请通过从模式定义中删除注释字符在 `/etc/autofs.conf` 配置文件中进行设置。例如：
+
+>    **例 32.6 设置 autofs 配置**
+> 
+> ```
+> DEFAULT_MAP_OBJECT_CLASS="automountMap"
+> DEFAULT_ENTRY_OBJECT_CLASS="automount"
+> DEFAULT_MAP_ATTRIBUTE="automountMapName"
+> DEFAULT_ENTRY_ATTRIBUTE="automountKey"
+> DEFAULT_VALUE_ATTRIBUTE="automountInformation"
+> ```
+
+3. 确保在配置中注释了所有其他模式条目。 `rfc2307bis` 架构的 `automountKey` 属性替换了 `rfc2307` 架构的 `cn` 属性。以下是 LDAP 数据交换格式 (LDIF) 配置的示例：
+
+>    **例 32.7 LDIF 配置**
+> 
+> ```
+> # auto.master, example.com
+> dn: automountMapName=auto.master,dc=example,dc=com
+> objectClass: top
+> objectClass: automountMap
+> automountMapName: auto.master
+> 
+> # /home, auto.master, example.com
+> dn: automountMapName=auto.master,dc=example,dc=com
+> objectClass: automount
+> automountKey: /home
+> automountInformation: auto.home
+> 
+> # auto.home, example.com
+> dn: automountMapName=auto.home,dc=example,dc=com
+> objectClass: automountMap
+> automountMapName: auto.home
+> 
+> # foo, auto.home, example.com
+> dn: automountKey=foo,automountMapName=auto.home,dc=example,dc=com
+> objectClass: automount
+> automountKey: foo
+> automountInformation: filer.example.com:/export/foo
+> 
+> # /, auto.home, example.com
+> dn: automountKey=/,automountMapName=auto.home,dc=example,dc=com
+> objectClass: automount
+> automountKey: /
+> automountInformation: filer.example.com:/export/&
+> ```
+
+## 32.7 使用 systemd.automount 通过 /etc/fstab 按需挂载文件系统
+
+此过程显示了在 `/etc/fstab` 中定义挂载点时如何使用自动挂载 systemd 单元按需挂载文件系统。您必须为每个挂载添加一个自动挂载单元并启用它。
+
+**流程**
+
+1. 添加所需的 fstab 条目，如[第 30 章持久挂载文件系统](#第-30-章-永久挂载文件系统)所述。例如：
+   
+   ```
+   /dev/disk/by-id/da875760-edb9-4b82-99dc-5f4b1ff2e5f4 /mount/point xfs defaults 0 0
+   ```
+
+2. 将 `x-systemd.automount` 添加到上一步中创建的条目的 opyions 字段。
+
+3. 加载新创建的单元，以便您的系统注册新配置：
+   
+   ```
+   # systemctl daemon-reload
+   ```
+
+4. 启动自动挂载单元：
+   
+   ```
+   # systemctl start mount-point.automount
+   ```
+
+**验证**
+
+1. 检查 `mount-point.automount` 是否正在运行：
+   
+   ```
+   # systemctl status mount-point.automount
+   ```
+
+2. 检查自动挂载的目录是否有所需的内容：
+   
+   ```
+   # ls /mount/point
+   ```
+
+## 32.8 使用 systemd.automount 通过挂载单元按需挂载文件系统
+
+此过程显示了当挂载点由挂载单元定义时，如何使用自动挂载 systemd 单元按需挂载文件系统。您必须为每个挂载添加一个自动安装单元并启用它。
+
+**流程**
+
+1. 创建一个挂载单元。例如：
+   
+   ```
+   mount-point.mount
+   [Mount]
+   What=/dev/disk/by-uuid/f5755511-a714-44c1-a123-cfde0e4ac688
+   Where=/mount/point
+   Type=xfs
+   ```
+
+2. 创建一个与挂载单元同名但扩展名为 `.automount` 的单元文件。
+
+3. 打开文件并创建一个 `[Automount]` 部分。将 `Where=` 选项设置为挂载路径：
+   
+   ```
+   [Automount]
+   Where=/mount/point
+   [Install]
+   WantedBy=multi-user.target
+   ```
+
+4. 加载新创建的单元，以便您的系统注册新配置：
+   
+   ```
+   # systemctl daemon-reload
+   ```
+
+5. 启用并启动自动挂载单元：
+   
+   ```
+   # systemctl enable --now mount-point.automount
+   ```
+
+**验证**
+
+1. 检查 `mount-point.automount` 是否正在运行：
+   
+   ```
+   # systemctl status mount-point.automount
+   ```
+
+2. 检查自动挂载的目录是否有所需的内容：
+   
+   ```
+   # ls /mount/point
+   ```
